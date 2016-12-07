@@ -1,17 +1,18 @@
-# Cairo drawing module
-#
 import cairocffi as cairo
-
 import sys
 import getopt
-import matplotlib
-import numpy as np
-matplotlib.use("Agg")  # Force matplotlib to not use Xwindows backend.
 
-import matplotlib.pyplot as plt
 
 ###############################################################################
 ###############################################################################
+
+###############################################################################
+#
+# Define the path our file
+#
+outpath = '/home/a-m/ib501_stud12/shell/data_viz'
+ps = cairo.PDFSurface(outpath, img['height'], img['width'])
+cr = cairo.Context(ps)
 
 # create a dictionary for chromosome size
 chr_size_dic = {'groupI'    : 28185914, 'groupII'   : 23295652, 'groupIII'   : 16798506, 'groupIV'  : 32632948,
@@ -22,15 +23,17 @@ chr_size_dic = {'groupI'    : 28185914, 'groupII'   : 23295652, 'groupIII'   : 1
 'groupXXI'  : 11717487}
 
 ###############################################################################
-viz_parameters = {'total_genome_size': int(sum(chr_size_dic.items())),
+viz_parameters = {'total_genome_size': int(sum(chr_size_dic.values())),
 'number_of_chr': 21,
-'degree_per_nuc': float((360 - int(viz_parameters['number_of_chr']))/ viz_parameters['total_genome_size']),
+'degree_per_nuc': 0,
 'rad_inner' : 250,
 'rad_outer': 300,
 'ring_gap': 10,
 'arc_padding_in_degrees': 1,
 'last_degree_end': 0,
 'ring_width': 25}
+
+viz_parameters["degree_per_nuc"] = float((360 - int(viz_parameters['number_of_chr']))/ viz_parameters['total_genome_size'])
 
 img = {}
 img['height']     = 800
@@ -39,30 +42,30 @@ img['center_x']   = img['width']  / 2.0
 img['center_y']   = img['height'] / 2.0
 img['font_size']  = 16
 
-#
-# Choose a font
-#
-cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-# Set the font size
-cr.set_font_size(font_size)
-# Choose a font color
-cr.set_source_rgb(red, green, blue)
-#
-# Get the size of the text we want to write, returns a tuple:
-#   (x, y, width, height, dx, dy)
-#
-textents = cr.text_extents(text)
-text_width = textents[2]
-text_height = textents[3]
-#
-# Where you want to draw text may need to be adjusted,
-# depending on the size of the text.
-#
-# cr.move_to(x, y)
-#
-# Finally draw the text.
-#
-# cr.show_text(text)
+# #
+# # Choose a font
+# #
+# cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+# # Set the font size
+# cr.set_font_size(font_size)
+# # Choose a font color
+# cr.set_source_rgb(red, green, blue)
+# #
+# # Get the size of the text we want to write, returns a tuple:
+# #   (x, y, width, height, dx, dy)
+# #
+# textents = cr.text_extents(text)
+# text_width = textents[2]
+# text_height = textents[3]
+# #
+# # Where you want to draw text may need to be adjusted,
+# # depending on the size of the text.
+# #
+# # cr.move_to(x, y)
+# #
+# # Finally draw the text.
+# #
+# # cr.show_text(text)
 
 ###############################################################################
 ###############################################################################
@@ -121,13 +124,6 @@ text_height = textents[3]
 #     sys.stdout.flush()
 # ##################################################
 
-###############################################################################
-#
-# Define the path our file
-#
-outpath = "/home/a-m/ib501_stud12/shell/Final_hw"
-ps = cairo.PDFSurface(outpath, img['height'], img['width'])
-cr = cairo.Context(ps)
 
 
 ###############################################################################
