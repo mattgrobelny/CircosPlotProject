@@ -1,18 +1,13 @@
+#!/usr/bin/python
+
 import cairocffi as cairo
 import sys
 import getopt
+import math
 
 
 ###############################################################################
 ###############################################################################
-
-###############################################################################
-#
-# Define the path our file
-#
-outpath = '/home/a-m/ib501_stud12/shell/data_viz'
-ps = cairo.PDFSurface(outpath, img['height'], img['width'])
-cr = cairo.Context(ps)
 
 # create a dictionary for chromosome size
 chr_size_dic = {'groupI'    : 28185914, 'groupII'   : 23295652, 'groupIII'   : 16798506, 'groupIV'  : 32632948,
@@ -33,14 +28,22 @@ viz_parameters = {'total_genome_size': int(sum(chr_size_dic.values())),
 'last_degree_end': 0,
 'ring_width': 25}
 
-viz_parameters["degree_per_nuc"] = float((360 - int(viz_parameters['number_of_chr']))/ viz_parameters['total_genome_size'])
+viz_parameters['degree_per_nuc'] = float((360 - int(viz_parameters['number_of_chr'])) / viz_parameters['total_genome_size'])
 
 img = {}
 img['height']     = 800
 img['width']      = 800
-img['center_x']   = img['width']  / 2.0
+img['center_x']   = img['width'] / 2.0
 img['center_y']   = img['height'] / 2.0
 img['font_size']  = 16
+
+###############################################################################
+#
+# Define the path our file
+#
+outpath = '/home/a-m/ib501_stud12/shell/data_viz/data_viz.pdf'
+ps = cairo.PDFSurface(str(outpath), float(img['height']), float(img['width']))
+cr = cairo.Context(ps)
 
 # #
 # # Choose a font
