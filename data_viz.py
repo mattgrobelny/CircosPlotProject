@@ -18,18 +18,23 @@ chr_size_dic = {'groupI'    : 28185914, 'groupII'   : 23295652, 'groupIII'   : 1
 'groupXVI'  : 18115788, 'groupXVII' : 14603141, 'groupXVIII' : 16282716, 'groupXX'  : 19732071,
 'groupXXI'  : 11717487}
 
+chrm_name_order_list= ('groupI', 'groupII','groupIII', 'groupIV',
+'groupIX', 'groupV', 'groupVI', 'groupVII',
+'groupVIII', 'groupX', 'groupXI', 'groupXII',
+'groupXIII', 'groupXIV', 'groupXIX', 'groupXV',
+'groupXVI', 'groupXVII', 'groupXVIII', 'groupXX',
+'groupXXI')
 ###############################################################################
 viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'number_of_chr': len(chr_size_dic),
-'degree_per_nuc': 0,
 'rad_inner' : 250,
-'rad_outer': 300,
 'ring_gap': 10,
-'arc_padding_in_degrees': 1,
+'arc_padding_in_degrees': 2,
 'last_degree_end': 0,
-'ring_width': 25}
+'ring_width': 35}
 
-viz_parameters['degree_per_nuc'] = float(360 - viz_parameters['number_of_chr']- viz_parameters['number_of_chr'] * viz_parameters['arc_padding_in_degrees']) / float(viz_parameters['total_genome_size'])
+viz_parameters['degree_per_nuc'] = float(360 - (viz_parameters['number_of_chr'] * viz_parameters['arc_padding_in_degrees'])) / float(viz_parameters['total_genome_size'])
+
 img = {}
 img['height']     = 800
 img['width']      = 800
@@ -163,13 +168,15 @@ def get_x_y_coordinates(center_x, center_y, degree, radius):
 
 ###############################################################################
 
-def chrm_arc(chrm_name, rad_type):
-    if rad_type == 'inner':
+# Arc drawing functions
+
+def chrm_arc(chrm_name, level):
+    if level == 0:
         radius = viz_parameters['rad_inner']
     else:
-        radius = viz_parameters['rad_outer']
+        radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap']*level + viz_parameters['ring_width']*level
 
-    total_degrees = (viz_parameters['degree_per_nuc']) * chr_size_dic[chrm_name]
+    total_degrees = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
 
     sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius)
 
@@ -199,16 +206,22 @@ def chrm_arc(chrm_name, rad_type):
     cr.stroke()
 
     # fill with gray
-    cr.set_source_rgb(0.5, 0.5, 0.5)
+    #cr.set_source_rgb(0.5, 0.5, 0.5)
     cr.fill()
 
     # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
-    viz_parameters['last_degree_end'] = viz_parameters['last_degree_end'] + total_degrees + viz_parameters['arc_padding_in_degrees']
+    viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(total_degrees) + float(viz_parameters['arc_padding_in_degrees'])
 
-# test1
-for key in chr_size_dic.keys():
-    print key
-    chrm_arc(key, 'inner')
+def draw_chrom_arc(chrm_list, level):
+    for key in chrm_list:
+        chrm_arc(key, level)
+    viz_parameters['last_degree_end']= 0
+
+#Test1
+draw_chrom_arc(chrm_name_order_list, 0)
+draw_chrom_arc(chrm_name_order_list, 1)
+draw_chrom_arc(chrm_name_order_list, 2)
+draw_chrom_arc(chrm_name_order_list, 3)
 
 
 ###############################################################################
