@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-import cairocffi as cairo
+#import cairocffi as cairo
+import cairo
 import sys
 import getopt
 import math
@@ -18,8 +19,8 @@ chr_size_dic = {'groupI'    : 28185914, 'groupII'   : 23295652, 'groupIII'   : 1
 'groupXXI'  : 11717487}
 
 ###############################################################################
-viz_parameters = {'total_genome_size': int(sum(chr_size_dic.values())),
-'number_of_chr': 21,
+viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
+'number_of_chr': len(chr_size_dic),
 'degree_per_nuc': 0,
 'rad_inner' : 250,
 'rad_outer': 300,
@@ -28,8 +29,7 @@ viz_parameters = {'total_genome_size': int(sum(chr_size_dic.values())),
 'last_degree_end': 0,
 'ring_width': 25}
 
-viz_parameters['degree_per_nuc'] = float((360 - int(viz_parameters['number_of_chr'])) / viz_parameters['total_genome_size'])
-
+viz_parameters['degree_per_nuc'] = float(360 - viz_parameters['number_of_chr']- viz_parameters['number_of_chr'] * viz_parameters['arc_padding_in_degrees']) / float(viz_parameters['total_genome_size'])
 img = {}
 img['height']     = 800
 img['width']      = 800
@@ -41,7 +41,8 @@ img['font_size']  = 16
 #
 # Define the path our file
 #
-outpath = '/home/a-m/ib501_stud12/shell/data_viz/data_viz.pdf'
+#outpath = '/home/a-m/ib501_stud12/shell/data_viz/data_viz.pdf'
+outpath='/home/mgrobelny/Scripts/github/Data-viz-Circle-plot/data_viz.pdf'
 ps = cairo.PDFSurface(str(outpath), float(img['height']), float(img['width']))
 cr = cairo.Context(ps)
 
@@ -150,7 +151,7 @@ def get_x_y_coordinates(center_x, center_y, degree, radius):
         opp_side = radius * math.sin(math.radians(theta))
         adj_side = radius * math.cos(math.radians(theta))
         x = center_x - adj_side
-        y = centre_y - opp_side
+        y = center_y - opp_side
 
     else:
         theta = float(degree - 270.0)
@@ -163,28 +164,34 @@ def get_x_y_coordinates(center_x, center_y, degree, radius):
 ###############################################################################
 
 def chrm_arc(chrm_name, rad_type):
-    if rad_type == "inner":
+    if rad_type == 'inner':
         radius = viz_parameters['rad_inner']
     else:
         radius = viz_parameters['rad_outer']
 
     total_degrees = (viz_parameters['degree_per_nuc']) * chr_size_dic[chrm_name]
+
     sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius)
+
     cr.move_to(sx, sy)
     start_deg = viz_parameters['last_degree_end']
     end_deg = viz_parameters['last_degree_end'] + total_degrees
 
     # draw outer arc
-    cr.set_source_rgb(0, 0, 0)
-    cr.arc(img['center_x'], img['center_y'], radius, math.radians(start_deg), math.radians(end_deg))
+    cr.new_sub_path()
+    cr.arc_negative(img['center_x'], img['center_y'], radius, math.radians(end_deg),math.radians(start_deg))
 
     # draw line to inner arc
     sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius - viz_parameters['ring_width'])
     cr.line_to(sx, sy)
 
-    # draw reverse arc
-    cr.arc_negative(img['center_x'], img['center_y'], radius - viz_parameters['ring_width'], math.radians(start_deg), math.radians(end_deg))
+    #def get_x_y_coordinates(center_x, center_y, degree, radius):
 
+    # draw reverse arc
+    cr.arc(img['center_x'], img['center_y'], radius - viz_parameters['ring_width'], math.radians(start_deg), math.radians(end_deg))
+
+    # set color
+    cr.set_source_rgb(0, 0, 0)
     # close arc
     cr.close_path()
 
@@ -192,14 +199,17 @@ def chrm_arc(chrm_name, rad_type):
     cr.stroke()
 
     # fill with gray
-    cr.set_source_rgb(0.4, 0, 0)
+    cr.set_source_rgb(0.5, 0.5, 0.5)
     cr.fill()
 
     # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
     viz_parameters['last_degree_end'] = viz_parameters['last_degree_end'] + total_degrees + viz_parameters['arc_padding_in_degrees']
 
 # test1
-chrm_arc('groupI', 'inner')
+for key in chr_size_dic.keys():
+    print key
+    chrm_arc(key, 'inner')
+
 
 ###############################################################################
 ###############################################################################
