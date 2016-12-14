@@ -138,55 +138,28 @@ def get_x_y_coordinates(center_x, center_y, degree, radius):
         y = center_y - adj_side
     return (x, y)
 
+# int to roman not my code from:
+# https://www.safaribooksonline.com/library/view/python-cookbook/0596001673/ch03s24.html
+def int_to_roman(input):
+    """ Convert an integer to a Roman numeral. """
+    if not isinstance(input, type(1)):
+        raise TypeError, "expected integer, got %s" % type(input)
+    if not 0 < input < 4000:
+        raise ValueError, "Argument must be between 1 and 3999"
+    ints = (1000, 900,  500, 400, 100,  90, 50,  40, 10,  9,   5,  4,   1)
+    nums = ('M',  'CM', 'D', 'CD','C', 'XC','L','XL','X','IX','V','IV','I')
+    result = []
+    for i in range(len(ints)):
+        count = int(input / ints[i])
+        result.append(nums[i] * count)
+        input -= ints[i] * count
+    return ''.join(result)
+
 ###############################################################################
 
 # Arc drawing functions
 
 # Draw a circle of arcs based on a list of chr which corresponed to the chrm size dic
-def chrm_arc(chrm_name, level, trim):
-    if level == 0:
-        radius = viz_parameters['rad_inner']
-    else:
-        radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap']*level + viz_parameters['ring_width']*level
-
-    viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
-
-    sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius)
-
-    cr.move_to(sx, sy)
-    start_deg = viz_parameters['last_degree_end']
-    end_deg = viz_parameters['last_degree_end'] + viz_parameters['total_degrees']
-
-    # draw outer arc
-    cr.new_sub_path()
-    cr.arc_negative(img['center_x'], img['center_y'], radius, math.radians(end_deg),math.radians(start_deg))
-
-    # draw line to inner arc
-    sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius - viz_parameters['ring_width'])
-    cr.line_to(sx, sy)
-
-    # draw reverse arc
-    cr.arc(img['center_x'], img['center_y'], radius - viz_parameters['ring_width'], math.radians(start_deg), math.radians(end_deg))
-
-    cr.close_path()
-
-    # add black trim to chrm arcs 0 no , 1 yes
-    if trim == 0:
-        # cr.set_source_rgb(viz_parameters['fill_color'])
-
-        # fill with grey color
-        cr.set_source_rgb(0.4, 0.4, 0.4)
-        cr.fill()
-    else:
-        #cr.set_source_rgb(viz_parameters['trim_color'])
-
-        #  trim in black
-        cr.set_source_rgb(0, 0, 0)
-        cr.stroke()
-
-    # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
-    viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
-
 def draw_label(text, x, y):
 
     # Font
@@ -207,6 +180,59 @@ def draw_label(text, x, y):
     # depending on the size of the text.
     cr.move_to(x, y)
     cr.show_text(text)
+
+def chrm_arc(chrm_name, level, trim):
+
+    # Create intial arc
+    radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * level + viz_parameters['ring_width'] * level
+
+    # calculate the number of degrees the are will span based on chrm size
+    viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
+
+    # draw first arc based on the ending of the pervious arc
+    sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius)
+
+    cr.move_to(sx, sy)
+    start_deg = viz_parameters['last_degree_end']
+    end_deg = viz_parameters['last_degree_end'] + viz_parameters['total_degrees']
+
+    # draw outer arc
+    cr.new_sub_path()
+    cr.arc_negative(img['center_x'], img['center_y'], radius, math.radians(end_deg),math.radians(start_deg))
+
+    # draw line to inner arc
+    sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius - viz_parameters['ring_width'])
+    cr.line_to(sx, sy)
+
+    # draw reverse arc
+    cr.arc(img['center_x'], img['center_y'], radius - viz_parameters['ring_width'], math.radians(start_deg), math.radians(end_deg))
+
+    cr.close_path()
+
+    ############################
+    # Add black trim to chrm arcs 0 no , 1 yes
+    if trim == 0:
+        # cr.set_source_rgb(viz_parameters['fill_color'])
+
+        # fill with grey color
+        cr.set_source_rgb(0.4, 0.4, 0.4)
+        cr.fill()
+    else:
+        #cr.set_source_rgb(viz_parameters['trim_color'])
+
+        #  trim in black
+        cr.set_source_rgb(0, 0, 0)
+        cr.stroke()
+
+    ############################
+    # Add 10mb labels
+
+
+
+
+
+    # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
+    viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
 
 def draw_chrom_arc(chrm_list, level, trim):
     for key in chrm_list:
