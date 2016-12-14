@@ -11,7 +11,7 @@ import math
 ###############################################################################
 
 # create a dictionary for chromosome size
-chr_size_dic = {'groupI'    : 28185914, 'groupII'   : 23295652, 'groupIII'   : 16798506, 'groupIV'  : 32632948,
+chr_size_dic = {'groupI' : 28185914, 'groupII'   : 23295652, 'groupIII'   : 16798506, 'groupIV'  : 32632948,
 'groupIX'   : 20249479, 'groupV'    : 12251397, 'groupVI'    : 17083675, 'groupVII' : 27937443,
 'groupVIII' : 19368704, 'groupX'    : 15657440, 'groupXI'    : 16706052, 'groupXII' : 18401067,
 'groupXIII' : 20083130, 'groupXIV'  : 15246461, 'groupXIX'   : 20240660, 'groupXV'  : 16198764,
@@ -32,6 +32,7 @@ viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'arc_padding_in_degrees': 2,
 'last_degree_end': 0,
 'ring_width': 35
+'total_degrees': 0
 #'fill_color' :'0.4,0.4,0.4' ,
 #'trim_color' : '0,0,0'
 }
@@ -54,43 +55,13 @@ outpath='/home/mgrobelny/Scripts/github/Data-viz-Circle-plot/data_viz.pdf'
 ps = cairo.PDFSurface(str(outpath), float(img['height']), float(img['width']))
 cr = cairo.Context(ps)
 
-# #
-# # Choose a font
-# #
-# cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-# # Set the font size
-# cr.set_font_size(font_size)
-# # Choose a font color
-# cr.set_source_rgb(red, green, blue)
-# #
-# # Get the size of the text we want to write, returns a tuple:
-# #   (x, y, width, height, dx, dy)
-# #
-# textents = cr.text_extents(text)
-# text_width = textents[2]
-# text_height = textents[3]
-# #
-# # Where you want to draw text may need to be adjusted,
-# # depending on the size of the text.
-# #
-# # cr.move_to(x, y)
-# #
-# # Finally draw the text.
-# #
-# # cr.show_text(text)
-
-###############################################################################
-###############################################################################
 
 ###############################################################################
 # # default parameters
-# kmer = 11
-# file_name = ""
-# xmax = 2000
-# file_type = "fasta"
+
 # argv = sys.argv[1:]
 # try:
-#     opts, args = getopt.getopt(argv, "hk:x:f:t:")
+#     opts, args = getopt.getopt(argv, "hs:")
 # except getopt.GetoptError:
 #     print 'kspec.py -k <kmer_size> -x <x_axis_max> -t <type>[fasta|fastq] -f <inputfile>'
 #     sys.exit(2)
@@ -136,8 +107,6 @@ cr = cairo.Context(ps)
 #     sys.stdout.flush()
 # ##################################################
 
-
-
 ###############################################################################
 #
 # Convert a radius and a span of degrees into X, Y coordinates #
@@ -173,19 +142,20 @@ def get_x_y_coordinates(center_x, center_y, degree, radius):
 
 # Arc drawing functions
 
+# Draw a circle of arcs based on a list of chr which corresponed to the chrm size dic
 def chrm_arc(chrm_name, level, trim):
     if level == 0:
         radius = viz_parameters['rad_inner']
     else:
         radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap']*level + viz_parameters['ring_width']*level
 
-    total_degrees = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
+    viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
 
     sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius)
 
     cr.move_to(sx, sy)
     start_deg = viz_parameters['last_degree_end']
-    end_deg = viz_parameters['last_degree_end'] + total_degrees
+    end_deg = viz_parameters['last_degree_end'] + viz_parameters['total_degrees']
 
     # draw outer arc
     cr.new_sub_path()
@@ -195,37 +165,76 @@ def chrm_arc(chrm_name, level, trim):
     sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius - viz_parameters['ring_width'])
     cr.line_to(sx, sy)
 
-    #def get_x_y_coordinates(center_x, center_y, degree, radius):
-
     # draw reverse arc
     cr.arc(img['center_x'], img['center_y'], radius - viz_parameters['ring_width'], math.radians(start_deg), math.radians(end_deg))
 
     cr.close_path()
 
+    # add black trim to chrm arcs 0 no , 1 yes
     if trim == 0:
-        #cr.set_source_rgb(viz_parameters['fill_color'])
-        cr.set_source_rgb(0.4,0.4,0.4)
+        # cr.set_source_rgb(viz_parameters['fill_color'])
+
+        # fill with grey color
+        cr.set_source_rgb(0.4, 0.4, 0.4)
         cr.fill()
     else:
         #cr.set_source_rgb(viz_parameters['trim_color'])
-        cr.set_source_rgb(0,0,0)
+
+        #  trim in black
+        cr.set_source_rgb(0, 0, 0)
         cr.stroke()
 
     # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
-    viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(total_degrees) + float(viz_parameters['arc_padding_in_degrees'])
+    viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
 
-def draw_chrom_arc(chrm_list, level,trim):
+def draw_label(text, x, y):
+
+    # Font
+    cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+    # Set the font size
+    cr.set_font_size(font_size)
+    # font color
+    cr.set_source_rgb(0, 0, 0)
+
+    # Get the size of the text we want to write, returns a tuple:
+    #   (x, y, width, height, dx, dy)
+    #
+    textents = cr.text_extents(text)
+    text_width = textents[2]
+    text_height = textents[3]
+    #
+    # Where you want to draw text may need to be adjusted,
+    # depending on the size of the text.
+    cr.move_to(x, y)
+    cr.show_text(text)
+
+def draw_chrom_arc(chrm_list, level, trim):
     for key in chrm_list:
         chrm_arc(key, level, trim)
-    viz_parameters['last_degree_end']= 0
+    viz_parameters['last_degree_end'] = 0
 
-#Test1
+
+# Test1
 for i in range(3):
-    draw_chrom_arc(chrm_name_order_list, i,0)
-    draw_chrom_arc(chrm_name_order_list, i,1)
+    draw_chrom_arc(chrm_name_order_list, i, 0)
+    draw_chrom_arc(chrm_name_order_list, i, 1)
 
 
 ###############################################################################
+
+# # Data import
+# in_file =
+# fh1 = open(in_file, 'r')
+# fst_stats = {}
+# # Add each chromosome to the dictionary and store the
+# # basepair and statistical value
+#
+# fst_stats[chr]['bp']   = []
+# fst_stats[chr]['stat'] = []
+# rna_stats = {}
+# rna_stats[chr]['bp']   = []
+# ran_stats[chr]['stat'] = []
+
 ###############################################################################
 # End of file
 #
