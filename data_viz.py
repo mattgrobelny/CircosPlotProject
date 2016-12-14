@@ -31,7 +31,10 @@ viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'ring_gap': 10,
 'arc_padding_in_degrees': 2,
 'last_degree_end': 0,
-'ring_width': 35}
+'ring_width': 35
+#'fill_color' :'0.4,0.4,0.4' ,
+#'trim_color' : '0,0,0'
+}
 
 viz_parameters['degree_per_nuc'] = float(360 - (viz_parameters['number_of_chr'] * viz_parameters['arc_padding_in_degrees'])) / float(viz_parameters['total_genome_size'])
 
@@ -170,7 +173,7 @@ def get_x_y_coordinates(center_x, center_y, degree, radius):
 
 # Arc drawing functions
 
-def chrm_arc(chrm_name, level):
+def chrm_arc(chrm_name, level, trim):
     if level == 0:
         radius = viz_parameters['rad_inner']
     else:
@@ -197,31 +200,29 @@ def chrm_arc(chrm_name, level):
     # draw reverse arc
     cr.arc(img['center_x'], img['center_y'], radius - viz_parameters['ring_width'], math.radians(start_deg), math.radians(end_deg))
 
-    # set color
-    cr.set_source_rgb(0, 0, 0)
-    # close arc
     cr.close_path()
 
-    # write  line
-    cr.stroke()
-
-    # fill with gray
-    #cr.set_source_rgb(0.5, 0.5, 0.5)
-    cr.fill()
+    if trim == 0:
+        #cr.set_source_rgb(viz_parameters['fill_color'])
+        cr.set_source_rgb(0.4,0.4,0.4)
+        cr.fill()
+    else:
+        #cr.set_source_rgb(viz_parameters['trim_color'])
+        cr.set_source_rgb(0,0,0)
+        cr.stroke()
 
     # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
     viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(total_degrees) + float(viz_parameters['arc_padding_in_degrees'])
 
-def draw_chrom_arc(chrm_list, level):
+def draw_chrom_arc(chrm_list, level,trim):
     for key in chrm_list:
-        chrm_arc(key, level)
+        chrm_arc(key, level, trim)
     viz_parameters['last_degree_end']= 0
 
 #Test1
-draw_chrom_arc(chrm_name_order_list, 0)
-draw_chrom_arc(chrm_name_order_list, 1)
-draw_chrom_arc(chrm_name_order_list, 2)
-draw_chrom_arc(chrm_name_order_list, 3)
+for i in range(3):
+    draw_chrom_arc(chrm_name_order_list, i,0)
+    draw_chrom_arc(chrm_name_order_list, i,1)
 
 
 ###############################################################################
