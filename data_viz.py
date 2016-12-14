@@ -34,7 +34,10 @@ viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'ring_width': 35
 'total_degrees': 0,
 '10mb_step_off_set': 5,
-'width': 0.5   # must be float ? need to test
+'font_size': 5, # need to test sizes
+'width': 0.5,   # must be float ? need to test
+'dash_pattern': 0.5, # a sequence specifying alternate lengths of on and off stroke portions.
+'label_units': "Mb"
 #'fill_color' :'0.4,0.4,0.4' ,
 #'trim_color' : '0,0,0'
 }
@@ -167,7 +170,7 @@ def draw_label(text, x, y):
     # Font
     cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
     # Set the font size
-    cr.set_font_size(font_size)
+    cr.set_font_size(viz_parameters['font_size'])
     # font color
     cr.set_source_rgb(0, 0, 0)
 
@@ -183,8 +186,63 @@ def draw_label(text, x, y):
     cr.move_to(x, y)
     cr.show_text(text)
 
-def chrm_arc(chrm_name, level, trim):
+# Draw 10mb label markers
+def draw_10mb_labels(chrm_list, level):
+    for chrm_name in chrm_list:
+        # Add 10mb labels
+        ten_mb_step = 0
+        ten_mb = int(chr_size_dic[chrm_name] / 1000000)
+        for i in range(ten_mb):
+            # caculate 10mb step
+            ten_mb_step = ten_mb_step + i * 1000000
 
+            # determine degree of 10mb step line
+            ten_mb_step_degree = float(ten_mb_step * viz_parameters['degree_per_nuc'] + viz_parameters['last_degree_end'])
+
+            # find the x and y pos of the location of the 10mb step
+            sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], ten_mb_step_degree, radius - viz_parameters['10mb_step_off_set'])
+
+            # move to that location
+            cr.move_to(sx, sy)
+
+            # find the end of the line
+            end_of_line = radius + viz_parameters['ring_gap'] * (level) + viz_parameters['ring_width'] * level + viz_parameters['10mb_step_off_set']
+            sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], ten_mb_step_degree, end_of_line)
+            # write line
+            cr.line_to(sx, sy)
+
+            # made dashed line
+            cr.set_dash(viz_parameters['dash_pattern'])
+
+            if i % 2 == 0:
+                # darker grey line color
+                cr.set_source_rgb(0.3, 0.3, 0.3)
+
+                # stroke a thicker line
+                cr.set_line_width(viz_parameters['width'] + 0.1)
+
+                cr.stroke()
+
+                # find the x and y location for the 10m label
+                label_x, label_y = get_x_y_coordinates(img['center_x'], img['center_y'], ten_mb_step_degree, radius - viz_parameters['10mb_step_off_set'] * 2)
+                cr.move_to(label_x, label_y)
+
+                # write label name w/ units
+                label = str(int(i * 10)) + viz_parameters['label_units']
+                # print label
+                draw_label(label, label_x, label_y)
+
+            else:
+                # ligher grey line color
+                cr.set_source_rgb(0.4, 0.4, 0.4)
+
+                # stroke a thinner line
+                set_line_width(viz_parameters['width'])
+                cr.stroke()
+
+# Draw chrm arc for a given level w (1) or wo (0) balck trim
+def chrm_arc(chrm_name, level, trim):
+    draw_10mb_labels(chrm_name, level)
     # Create intial arc
     radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * level + viz_parameters['ring_width'] * level
 
@@ -231,60 +289,32 @@ def chrm_arc(chrm_name, level, trim):
     # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
     viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
 
-def draw_10mb_labels(chrm_name, level):
-    # Add 10mb labels
-    ten_mb_step = 0
-    ten_mb = int(chr_size_dic[chrm_name] / 1000000)
-    for i in range(ten_mb):
-        # caculate 10mb step
-        ten_mb_step = ten_mb_step + i * 1000000
-
-        # determine degree of 10mb step line
-        ten_mb_step_degree = float(ten_mb_step * viz_parameters['degree_per_nuc'] + viz_parameters['last_degree_end'])
-
-        # find the x and y pos of the location of the 10mb step
-        sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], ten_mb_step_degree, radius - viz_parameters['10mb_step_off_set'])
-
-        # move to that location
-        cr.move_to(sx, sy)
-
-        # find the end of the line
-        end_of_line = radius + viz_parameters['ring_gap'] * (level) + viz_parameters['ring_width'] * level + viz_parameters['10mb_step_off_set']
-        sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], ten_mb_step_degree, end_of_line)
-        cr.line_to(sx, sy)
-
-        if i % 2 == 0:
-            # darker grey line color
-            cr.set_source_rgb(0.3, 0.3, 0.3)
-
-            # stroke a thicker line
-            set_line_width(viz_parameters['width'] + 0.1)
-
-        else:
-            # ligher grey line color
-            cr.set_source_rgb(0.4, 0.4, 0.4)
-
-            # stroke a thinner line
-            set_line_width(viz_parameters['width'])
-
-            set_line_width(width)
-            dash = 0
-
-        cr.stroke
-
-
+# Draw all chrm arc for a given level w (1) or wo (0) balck trim
 def draw_chrom_arc(chrm_list, level, trim):
     for key in chrm_list:
         chrm_arc(key, level, trim)
     viz_parameters['last_degree_end'] = 0
 
+# Draw all chrm arc for a given level w (1) or wo (0) balck trim
+# w 10mb labels
+def draw_chrom_arc_w_label(chrm_list, total_levels, trim):
+    draw_10mb_labels(chrm_list, total_levels)
+    if trim == 0:
+        for i in range(total_levels):
+            draw_chrom_arc(chrm_list, i, 0)
+    else:
+        for i in range(total_levels):
+            draw_chrom_arc(chrm_list, i, 0)
+            draw_chrom_arc(chrm_list, i, 1)
+###############################################################################
 
 # Test1
 for i in range(3):
     draw_chrom_arc(chrm_name_order_list, i, 0)
     draw_chrom_arc(chrm_name_order_list, i, 1)
 
-
+# Test 2 - should output
+draw_chrom_arc_w_label(chrm_name_order_list, 3, 1)
 ###############################################################################
 
 # # Data import
