@@ -23,6 +23,17 @@ chrm_name_order_list= ('groupI', 'groupII','groupIII', 'groupIV',
 'groupVIII', 'groupIX', 'groupX', 'groupXI', 'groupXII',
 'groupXIII', 'groupXIV', 'groupXV',
 'groupXVI', 'groupXVII', 'groupXVIII', 'groupXIX','groupXX','groupXXI')
+
+stats_dic= {'Div' :(0,1),
+'Fst': (0, 1),
+'Rand': (0,1)
+}
+stat_list = ('Div','Fst', 'Rand')
+color_grad_dic= {'Div':[(0.2,0.2,0.6),(0.5,0.6,0.7)],
+'Fst':  [(0.3,0.2,0.6),(0.5,0.6,0.7)],
+'Rand': [(0.2,0.4,0.6),(0.5,0.9,0.7)]
+
+}
 ###############################################################################
 viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'number_of_chr': len(chr_size_dic),
@@ -36,7 +47,14 @@ viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'font_size': 5, # need to test sizes
 'width': 2,   # must be float ? need to test
 'dash_pattern': [3,1], # a sequence specifying alternate lengths of on and off stroke portions.
-'label_units': "Mb"
+'label_units': "Mb",
+'key_loc_offset' : 90,
+'key_width': 20,
+'key_height' : 100,
+'key_sep_distance':14,
+'key_degree_off_set': -10,
+"key_label_font_x": 0.5
+
 #'fill_color' :'0.4,0.4,0.4' ,
 #'trim_color' : '0,0,0'
 }
@@ -110,7 +128,7 @@ cr = cairo.Context(ps)
 #
 #     sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', suffix))
 #     sys.stdout.flush()
-# ##################################################
+#
 
 ###############################################################################
 #
@@ -284,6 +302,75 @@ def chrm_label(chrm_list, total_levels, roman):
         viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
         viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
 
+def color_key(total_levels,location,trim): #min, max,color_start, color_end,
+    if location == "top_left":
+        working_degree = 225
+    elif location == "bottom_right":
+        working_degree = 45
+    elif location == "bottom_left":
+        working_degree = 135
+    else:
+        # default to top_right location for key
+        working_degree = 315
+
+    radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * total_levels + viz_parameters['ring_width'] * total_levels + viz_parameters['key_loc_offset']
+    sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree + viz_parameters['key_degree_off_set'], radius)
+    sx_key = 0
+    for i in range(total_levels):
+        sx_key = sx + (viz_parameters['key_width'])* i +viz_parameters['key_sep_distance'] * i
+        cr.move_to(sx_key, sy)
+        cr.rectangle(sx_key, sy, viz_parameters['key_width'], viz_parameters['key_height'])
+        cr.close_path()
+        cr.set_line_width(viz_parameters['width'] - 1)
+        cr.set_dash([])
+
+        ############################
+        # Add black trim to key 0 no , 1 yes
+
+        if trim == 0:
+            # fill with color gradiant
+            x0 = sx_key +viz_parameters['key_width']/2
+            y0 = sy
+            x1 = x0
+            y1 = sy - viz_parameters['key_height']
+            # grad_fil = cr.LinearGradient(x0, y0, x1,y1)
+            # grad_fil.add_color_stop_rgba(0, "%s"%(color_grad_dic[stat_list[i][0]]), 1)
+            # grad_fil.add_color_stop_rgba(0, "%s"%(color_grad_dic[stat_list[i][0]]), 1)
+
+            lg1 = cr.LinearGradient(x0, y0, x1,y1)
+
+            count = 1
+
+            a = 0.1
+            while a < 1.0:
+                if count % 2:
+                    lg1.add_color_stop_rgba(a, 0, 0, 0, 1)
+                else:
+                    lg1.add_color_stop_rgba(a, 1, 0, 0, 1)
+                a = a + 0.1
+                count = count + 1
+            cr.set_source_rgb(lg1)
+            cr.fill()
+            cr.stroke()
+        else:
+            #cr.set_source_rgb(viz_parameters['trim_color'])
+
+            #  trim in black
+            cr.set_source_rgb(0, 0, 0)
+            cr.stroke()
+
+        # Draw Key labels
+
+        # Draw stat name above key
+        draw_label(stat_list[i], sx_key + viz_parameters['key_width']/2 +4, sy-3, 12* viz_parameters['key_label_font_x'],working_degree)
+
+        # Draw min labels
+        draw_label(str(stats_dic[stat_list[i]][0]), sx_key-2, sy + viz_parameters['key_height'], 9* viz_parameters['key_label_font_x'],working_degree)
+
+        # Draw max label
+        draw_label(str(stats_dic[stat_list[i]][1]), sx_key- 2, sy, 9* viz_parameters['key_label_font_x'],working_degree)
+
+
 # Draw chrm arc for a given level w (1) or wo (0) balck trim
 def chrm_arc(chrm_name, level, trim):
     # Create intial arc
@@ -339,16 +426,21 @@ def draw_chrom_arc(chrm_list, level, trim):
         chrm_arc(key, level, trim)
     viz_parameters['last_degree_end'] = 0
 
+# -------- Main Drawing function -------- #
 
 # Draw all chrm arc for a given level w (1) or wo (0) balck trim
 # w 10mb labels
-def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman):
-
+def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
     viz_parameters['last_degree_end'] = 0
+
+    # draw all breaks and labels
     draw_10mb_labels(chrm_list, total_levels)
     viz_parameters['last_degree_end'] = 0
+    # draw chm labels
     chrm_label(chrm_list, total_levels, roman)
     viz_parameters['last_degree_end'] = 0
+
+    #Draw all chrm arcs
     if trim == 0:
         for i in range(total_levels):
             draw_chrom_arc(chrm_list, i, 0)
@@ -356,13 +448,13 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman):
         for i in range(total_levels):
             draw_chrom_arc(chrm_list, i, 0)
             draw_chrom_arc(chrm_list, i, 1)
+
+    # Draw Key
+    color_key(total_levels, location, trim)
 ###############################################################################
-
-
 # Test 2 - should output
 
-
-draw_chrom_arc_w_label(chrm_name_order_list, 3, 1, 1)
+draw_chrom_arc_w_label(chrm_name_order_list, 3, 1, 1,"def")
 ###############################################################################
 
 # # Data import
