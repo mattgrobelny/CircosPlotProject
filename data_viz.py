@@ -19,11 +19,10 @@ chr_size_dic = {'groupI' : 28185914, 'groupII'   : 23295652, 'groupIII'   : 1679
 'groupXXI'  : 11717487}
 
 chrm_name_order_list= ('groupI', 'groupII','groupIII', 'groupIV',
-'groupIX', 'groupV', 'groupVI', 'groupVII',
-'groupVIII', 'groupX', 'groupXI', 'groupXII',
-'groupXIII', 'groupXIV', 'groupXIX', 'groupXV',
-'groupXVI', 'groupXVII', 'groupXVIII', 'groupXX',
-'groupXXI')
+'groupV', 'groupVI', 'groupVII',
+'groupVIII', 'groupIX', 'groupX', 'groupXI', 'groupXII',
+'groupXIII', 'groupXIV', 'groupXV',
+'groupXVI', 'groupXVII', 'groupXVIII', 'groupXIX','groupXX','groupXXI')
 ###############################################################################
 viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'number_of_chr': len(chr_size_dic),
@@ -33,15 +32,16 @@ viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'last_degree_end': 0,
 'ring_width': 35,
 'total_degrees': 0,
-'10mb_step_off_set': 5,
+'10mb_step_off_set':30,
 'font_size': 5, # need to test sizes
-'width': 0.5,   # must be float ? need to test
-'dash_pattern': [1], # a sequence specifying alternate lengths of on and off stroke portions.
+'width': 2,   # must be float ? need to test
+'dash_pattern': [3,1], # a sequence specifying alternate lengths of on and off stroke portions.
 'label_units': "Mb"
 #'fill_color' :'0.4,0.4,0.4' ,
 #'trim_color' : '0,0,0'
 }
 
+# calculate number of degrees per nucleotide
 viz_parameters['degree_per_nuc'] = float(360 - (viz_parameters['number_of_chr'] * viz_parameters['arc_padding_in_degrees'])) / float(viz_parameters['total_genome_size'])
 
 img = {}
@@ -165,12 +165,12 @@ def int_to_roman(input):
 # Arc drawing functions
 
 # Draw a circle of arcs based on a list of chr which corresponed to the chrm size dic
-def draw_label(text, x, y):
+def draw_label(text, x, y, font_size):
 
     # Font
     cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
     # Set the font size
-    cr.set_font_size(viz_parameters['font_size'])
+    cr.set_font_size(font_size)
     # font color
     cr.set_source_rgb(0, 0, 0)
 
@@ -183,34 +183,37 @@ def draw_label(text, x, y):
     #
     # Where you want to draw text may need to be adjusted,
     # depending on the size of the text.
-    cr.move_to(x, y)
+    centered_x= x -(text_width/2)
+    centered_y = y-(text_height/2)
+    cr.move_to(centered_x, centered_y)
     cr.show_text(text)
 
 # Draw 10mb label markers
 def draw_10mb_labels(chrm_list, level):
-    for chrm_name in chrm_list:
+
+    for chrm_name_it in chrm_list:
+
         break_size = 5000000 #bases
         # find how many 10mb breaks there are for chrm_name
-        five_mb_break = int(round(chr_size_dic[chrm_name])) / break_size
+        five_mb_break = int(round(chr_size_dic[chrm_name_it])) / break_size
 
         # determine degree of 10mb step line
         five_mb_step_degree = float(break_size * viz_parameters['degree_per_nuc'])
-        print "five_mb_step_degree" , five_mb_step_degree
+
         # for i number of breaks draw a line every 5mb and a
         for i in range(1,five_mb_break):
-            print "i:", i
-            # caculate 10mb step
+
+            # calculate 5mb step
             working_degree = five_mb_step_degree * i + viz_parameters['last_degree_end']
 
-            print working_degree
             # find the x and y pos of the location of the 10mb step
-            sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, viz_parameters['rad_inner']  - viz_parameters['10mb_step_off_set'])
+            sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, viz_parameters['rad_inner']  - viz_parameters['10mb_step_off_set']* 1.4)
 
             # move to that location
             cr.move_to(sx, sy)
 
             # find the end of the line
-            end_of_line = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * (level) + viz_parameters['ring_width'] * level + viz_parameters['10mb_step_off_set']
+            end_of_line = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * level + viz_parameters['ring_width'] * (level -1)
             sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, end_of_line)
             # write line
             cr.line_to(sx, sy)
@@ -220,7 +223,7 @@ def draw_10mb_labels(chrm_list, level):
 
             if i % 2 == 0:
                 # darker grey line color
-                cr.set_source_rgb(0.3, 0.3, 0.3)
+                cr.set_source_rgb(0.2, 0.2, 0.2)
 
                 # stroke a thicker line
                 cr.set_line_width(viz_parameters['width'] + 0.1)
@@ -228,13 +231,13 @@ def draw_10mb_labels(chrm_list, level):
                 cr.stroke()
 
                 # find the x and y location for the 10m label
-                label_x, label_y = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, viz_parameters['rad_inner'] - viz_parameters['10mb_step_off_set'] * 2)
-                cr.move_to(label_x, label_y)
+                label_x, label_y = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, viz_parameters['rad_inner'] - viz_parameters['10mb_step_off_set']*1.75)
 
                 # write label name w/ units
                 label = str(int(i * 5)) + viz_parameters['label_units']
 
-                draw_label(label, label_x, label_y)
+                # pass to draw label function
+                draw_label(label, label_x, label_y, 8)
 
             else:
                 # ligher grey line color
@@ -244,12 +247,12 @@ def draw_10mb_labels(chrm_list, level):
                 cr.set_line_width(viz_parameters['width'])
                 cr.stroke()
 
-
-        viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
+        # Update where the start of next chrm is os labeling can be indexed corretly
+        viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name_it])
         viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
+
 # Draw chrm arc for a given level w (1) or wo (0) balck trim
 def chrm_arc(chrm_name, level, trim):
-    draw_10mb_labels(chrm_name, level)
     # Create intial arc
     radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * level + viz_parameters['ring_width'] * level
 
@@ -275,7 +278,8 @@ def chrm_arc(chrm_name, level, trim):
     cr.arc(img['center_x'], img['center_y'], radius - viz_parameters['ring_width'], math.radians(start_deg), math.radians(end_deg))
 
     cr.close_path()
-
+    cr.set_line_width(viz_parameters['width'] - 1)
+    cr.set_dash([])
     ############################
     # Add black trim to chrm arcs 0 no , 1 yes
     if trim == 0:
@@ -305,7 +309,7 @@ def draw_chrom_arc(chrm_list, level, trim):
 # Draw all chrm arc for a given level w (1) or wo (0) balck trim
 # w 10mb labels
 def draw_chrom_arc_w_label(chrm_list, total_levels, trim):
-    print chrm_list
+
     viz_parameters['last_degree_end'] = 0
     draw_10mb_labels(chrm_list, total_levels)
     viz_parameters['last_degree_end'] = 0
@@ -324,7 +328,9 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim):
 #     draw_chrom_arc(chrm_name_order_list, i, 1)
 
 # Test 2 - should output
-draw_chrom_arc_w_label(chrm_name_order_list, 3, 1)
+
+
+draw_chrom_arc_w_label(chrm_name_order_list, 2, 1)
 ###############################################################################
 
 # # Data import
