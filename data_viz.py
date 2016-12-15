@@ -183,12 +183,12 @@ def draw_label(text, x, y, font_size,working_degree):
     #
     # Where you want to draw text may need to be adjusted,
     # depending on the size of the text.
-    if working_degree >=90 and working_degree <= 280:
+    if working_degree >=100 and working_degree <= 280:
         centered_x= x
         centered_y = y + text_height/2
     else:
         centered_x= x - text_width
-        centered_y =y
+        centered_y =y + 1
 
     cr.move_to(centered_x, centered_y)
     # cr.move_to(x,y)
@@ -201,13 +201,13 @@ def draw_10mb_labels(chrm_list, level):
 
         break_size = 5000000 #bases
         # find how many 10mb breaks there are for chrm_name
-        five_mb_break = int(round(chr_size_dic[chrm_name_it])) / break_size
+        five_mb_break = int(chr_size_dic[chrm_name_it] / break_size)
 
         # determine degree of 10mb step line
         five_mb_step_degree = float(break_size * viz_parameters['degree_per_nuc'])
 
         # for i number of breaks draw a line every 5mb and a
-        for i in range(1,five_mb_break):
+        for i in range(1,five_mb_break+1):
 
             # calculate 5mb step
             working_degree = five_mb_step_degree * i + viz_parameters['last_degree_end']
@@ -244,7 +244,7 @@ def draw_10mb_labels(chrm_list, level):
                 label = str(int(i * 5)) + viz_parameters['label_units']
 
                 # pass to draw label function
-                draw_label(label, label_x, label_y, 8, working_degree)
+                draw_label(label, label_x, label_y, 7, working_degree)
 
             else:
                 # ligher grey line color
