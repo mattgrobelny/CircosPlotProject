@@ -32,7 +32,7 @@ viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'last_degree_end': 0,
 'ring_width': 35,
 'total_degrees': 0,
-'10mb_step_off_set':30,
+'10mb_step_off_set':32,
 'font_size': 5, # need to test sizes
 'width': 2,   # must be float ? need to test
 'dash_pattern': [3,1], # a sequence specifying alternate lengths of on and off stroke portions.
@@ -165,7 +165,7 @@ def int_to_roman(input):
 # Arc drawing functions
 
 # Draw a circle of arcs based on a list of chr which corresponed to the chrm size dic
-def draw_label(text, x, y, font_size):
+def draw_label(text, x, y, font_size,working_degree):
 
     # Font
     cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
@@ -183,9 +183,15 @@ def draw_label(text, x, y, font_size):
     #
     # Where you want to draw text may need to be adjusted,
     # depending on the size of the text.
-    centered_x= x -(text_width/2)
-    centered_y = y-(text_height/2)
+    if working_degree >=90 and working_degree <= 280:
+        centered_x= x
+        centered_y = y + text_height/2
+    else:
+        centered_x= x - text_width
+        centered_y =y
+
     cr.move_to(centered_x, centered_y)
+    # cr.move_to(x,y)
     cr.show_text(text)
 
 # Draw 10mb label markers
@@ -231,20 +237,21 @@ def draw_10mb_labels(chrm_list, level):
                 cr.stroke()
 
                 # find the x and y location for the 10m label
-                label_x, label_y = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, viz_parameters['rad_inner'] - viz_parameters['10mb_step_off_set']*1.75)
+                label_x, label_y = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, viz_parameters['rad_inner']  - viz_parameters['10mb_step_off_set']* 1.49)
+                #working_degree, viz_parameters['rad_inner'] - viz_parameters['10mb_step_off_set']*1.75)
 
                 # write label name w/ units
                 label = str(int(i * 5)) + viz_parameters['label_units']
 
                 # pass to draw label function
-                draw_label(label, label_x, label_y, 8)
+                draw_label(label, label_x, label_y, 8, working_degree)
 
             else:
                 # ligher grey line color
                 cr.set_source_rgb(0.4, 0.4, 0.4)
 
                 # stroke a thinner line
-                cr.set_line_width(viz_parameters['width'])
+                cr.set_line_width(viz_parameters['width']-1)
                 cr.stroke()
 
         # Update where the start of next chrm is os labeling can be indexed corretly
@@ -330,7 +337,7 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim):
 # Test 2 - should output
 
 
-draw_chrom_arc_w_label(chrm_name_order_list, 2, 1)
+draw_chrom_arc_w_label(chrm_name_order_list, 3, 1)
 ###############################################################################
 
 # # Data import
