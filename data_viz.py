@@ -162,7 +162,7 @@ def int_to_roman(input):
 
 ###############################################################################
 
-# Arc drawing functions
+# --------  Drawing functions -------- #
 
 # Draw a circle of arcs based on a list of chr which corresponed to the chrm size dic
 def draw_label(text, x, y, font_size,working_degree):
@@ -260,7 +260,7 @@ def draw_10mb_labels(chrm_list, level):
 
 # Draw chrm name labels use ither provided labels from list or generate new names with roman number (roman= 1)
 def chrm_label(chrm_list, total_levels, roman):
-    count =0
+    count = 0
     for chrm_name in chrm_list:
         degree_for_label = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])/2
         working_degree = viz_parameters['last_degree_end'] + degree_for_label
@@ -358,10 +358,6 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman):
             draw_chrom_arc(chrm_list, i, 1)
 ###############################################################################
 
-# Test1
-# for i in range(3):
-#     draw_chrom_arc(chrm_name_order_list, i, 0)
-#     draw_chrom_arc(chrm_name_order_list, i, 1)
 
 # Test 2 - should output
 
