@@ -29,9 +29,9 @@ stats_dic= {'Div' :(0,1),
 'Rand': (0,1)
 }
 stat_list = ('Div','Fst', 'Rand')
-color_grad_dic= {'Div':[(0.2,0.2,0.6),(0.5,0.6,0.7)],
-'Fst':  [(0.3,0.2,0.6),(0.5,0.6,0.7)],
-'Rand': [(0.2,0.4,0.6),(0.5,0.9,0.7)]
+color_grad_dic= {'Div':['0,0,0','0.9,0.1,0.4'],
+'Fst':  ['0,0,0','0.1,0.5,0.4'],
+'Rand': ['0,0,0','0.5,0.5,0.1']
 
 }
 ###############################################################################
@@ -49,11 +49,11 @@ viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'dash_pattern': [3,1], # a sequence specifying alternate lengths of on and off stroke portions.
 'label_units': "Mb",
 'key_loc_offset' : 90,
-'key_width': 20,
-'key_height' : 100,
+'key_width': 30,
+'key_height' : 120,
 'key_sep_distance':14,
 'key_degree_off_set': -10,
-"key_label_font_x": 0.5
+"key_label_font_x": 0.6
 
 #'fill_color' :'0.4,0.4,0.4' ,
 #'trim_color' : '0,0,0'
@@ -332,26 +332,52 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
             x0 = sx_key +viz_parameters['key_width']/2
             y0 = sy
             x1 = x0
-            y1 = sy - viz_parameters['key_height']
-            # grad_fil = cr.LinearGradient(x0, y0, x1,y1)
-            # grad_fil.add_color_stop_rgba(0, "%s"%(color_grad_dic[stat_list[i][0]]), 1)
-            # grad_fil.add_color_stop_rgba(0, "%s"%(color_grad_dic[stat_list[i][0]]), 1)
+            y1 = sy + viz_parameters['key_height']
 
-            lg1 = cr.LinearGradient(x0, y0, x1,y1)
+            # start color gradient
+            grad_fil = cairo.LinearGradient(x0, y0, x1,y1)
 
-            count = 1
+            # pick out color vals from dic
+            color_end = color_grad_dic[stat_list[i]][0].split(',')
+            color_start = color_grad_dic[stat_list[i]][1].split(',')
 
-            a = 0.1
-            while a < 1.0:
-                if count % 2:
-                    lg1.add_color_stop_rgba(a, 0, 0, 0, 1)
-                else:
-                    lg1.add_color_stop_rgba(a, 1, 0, 0, 1)
-                a = a + 0.1
-                count = count + 1
-            cr.set_source_rgb(lg1)
+            # add color stops to gradient
+            grad_fil.add_color_stop_rgba(0, float(color_start[0]) , float(color_start[1]), float(color_start[2]),1)
+            grad_fil.add_color_stop_rgba(1, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
+            # for b in range(10):
+            #     grad_fil.add_color_stop_rgba(0, b/10,0.5,0.3, 1)
+
+            # grad_fil.add_color_stop_rgba(0.1, 0, 0, 0, 1)
+            # grad_fil.add_color_stop_rgba(0.5, 1, 1, 0, 1)
+            # grad_fil.add_color_stop_rgba(0.9, 0, 0, 0, 1)
+
+            cr.set_source(grad_fil)
             cr.fill()
-            cr.stroke()
+
+
+            # a = 0.1
+            # while a < 1.0:
+            #     if count % 2:
+            #         lg1.add_color_stop_rgba(a, 0, 0, 0, 1)
+            #     else:
+            #         lg1.add_color_stop_rgba(a, 1, 0, 0, 1)
+            #     a = a + 0.1
+            #     count = count + 1
+            # cr.set_source(lg1)
+            # cr.fill()
+
+            # Draw Key labels
+
+            # Draw stat name above key
+            draw_label(stat_list[i], sx_key + viz_parameters['key_width']/2 +4, sy-3, 12* viz_parameters['key_label_font_x'],working_degree)
+
+            # Draw min labels
+            draw_label(str(stats_dic[stat_list[i]][0]), sx_key-2, sy + viz_parameters['key_height'], 9* viz_parameters['key_label_font_x'],working_degree)
+
+            # Draw max label
+            draw_label(str(stats_dic[stat_list[i]][1]), sx_key- 2, sy, 9* viz_parameters['key_label_font_x'],working_degree)
+
+
         else:
             #cr.set_source_rgb(viz_parameters['trim_color'])
 
@@ -359,16 +385,6 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
             cr.set_source_rgb(0, 0, 0)
             cr.stroke()
 
-        # Draw Key labels
-
-        # Draw stat name above key
-        draw_label(stat_list[i], sx_key + viz_parameters['key_width']/2 +4, sy-3, 12* viz_parameters['key_label_font_x'],working_degree)
-
-        # Draw min labels
-        draw_label(str(stats_dic[stat_list[i]][0]), sx_key-2, sy + viz_parameters['key_height'], 9* viz_parameters['key_label_font_x'],working_degree)
-
-        # Draw max label
-        draw_label(str(stats_dic[stat_list[i]][1]), sx_key- 2, sy, 9* viz_parameters['key_label_font_x'],working_degree)
 
 
 # Draw chrm arc for a given level w (1) or wo (0) balck trim
@@ -444,13 +460,15 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
     if trim == 0:
         for i in range(total_levels):
             draw_chrom_arc(chrm_list, i, 0)
+            color_key(total_levels, location, 0)
     else:
         for i in range(total_levels):
             draw_chrom_arc(chrm_list, i, 0)
             draw_chrom_arc(chrm_list, i, 1)
+            color_key(total_levels, location, 0)
+            color_key(total_levels, location, 1)
 
-    # Draw Key
-    color_key(total_levels, location, trim)
+
 ###############################################################################
 # Test 2 - should output
 
