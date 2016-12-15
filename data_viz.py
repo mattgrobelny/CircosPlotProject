@@ -258,6 +258,32 @@ def draw_10mb_labels(chrm_list, level):
         viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name_it])
         viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
 
+# Draw chrm name labels use ither provided labels from list or generate new names with roman number (roman= 1)
+def chrm_label(chrm_list, total_levels, roman):
+    count =0
+    for chrm_name in chrm_list:
+        degree_for_label = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])/2
+        working_degree = viz_parameters['last_degree_end'] + degree_for_label
+        radian_for_label = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * total_levels + viz_parameters['ring_width'] * total_levels
+
+        label_x, label_y = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radian_for_label)
+        #working_degree, viz_parameters['rad_inner'] - viz_parameters['10mb_step_off_set']*1.75)
+        label = ""
+
+        if roman == 1:
+            label = str(int_to_roman(count + 1))
+            count = count +1
+        else:
+            label = str(chrm_name)
+
+        # pass to draw label function
+        draw_label(label, label_x, label_y, 12, working_degree)
+
+
+        # Update where the start of next chrm is os labeling can be indexed corretly
+        viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
+        viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
+
 # Draw chrm arc for a given level w (1) or wo (0) balck trim
 def chrm_arc(chrm_name, level, trim):
     # Create intial arc
@@ -313,12 +339,15 @@ def draw_chrom_arc(chrm_list, level, trim):
         chrm_arc(key, level, trim)
     viz_parameters['last_degree_end'] = 0
 
+
 # Draw all chrm arc for a given level w (1) or wo (0) balck trim
 # w 10mb labels
-def draw_chrom_arc_w_label(chrm_list, total_levels, trim):
+def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman):
 
     viz_parameters['last_degree_end'] = 0
     draw_10mb_labels(chrm_list, total_levels)
+    viz_parameters['last_degree_end'] = 0
+    chrm_label(chrm_list, total_levels, roman)
     viz_parameters['last_degree_end'] = 0
     if trim == 0:
         for i in range(total_levels):
@@ -337,7 +366,7 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim):
 # Test 2 - should output
 
 
-draw_chrom_arc_w_label(chrm_name_order_list, 3, 1)
+draw_chrom_arc_w_label(chrm_name_order_list, 3, 1, 1)
 ###############################################################################
 
 # # Data import
