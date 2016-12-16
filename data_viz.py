@@ -345,12 +345,12 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
             for grad_specturm in range(99):
                 grad_fil.add_color_stop_rgba(grad_specturm/100, float(color_start[0]) , float(color_start[1]), float(color_start[2]),1)
 
-            grad_fil.add_color_stop_rgba(1, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
+            #grad_fil.add_color_stop_rgba(1, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
 
-
+            print grad_fil.get_color_stop_rgba(1)
 
             cr.set_source(grad_fil)
-            print grad_fil.getColorStopRgba()
+            #print grad_fil.getColorStopRgba()
             cr.fill()
 
             # Draw Key labels
@@ -458,17 +458,44 @@ draw_chrom_arc_w_label(chrm_name_order_list, 3, 1, 1,"def")
 ###############################################################################
 
 # # Data import
-# in_file =
-# fh1 = open(in_file, 'r')
-# fst_stats = {}
-# # Add each chromosome to the dictionary and store the
-# # basepair and statistical value
-#
-# fst_stats[chr]['bp']   = []
-# fst_stats[chr]['stat'] = []
-# rna_stats = {}
-# rna_stats[chr]['bp']   = []
-# ran_stats[chr]['stat'] = []
+
+# Open fst Data file
+in_file =
+fh1_fst_file = open(in_file, 'r')
+
+# Create fst data dictionary
+fst_stats = {}
+fst_stats[chr]['bp']   = []
+fst_stats[chr]['stat'] = []
+
+# add each chrm, bp and stat pt to dictionary
+for line in fh1_fst_file:
+    # split tabs
+    line = line.split('\t')
+    # append data to each dictionary of  list
+    fst_stats[[line[0]]]['bp'].append(line[1])
+    fst_stats[[line[0]]]['stat'].append(line[2])
+fh1_fst_file.close()
+
+#repeate for Div data_viz
+rna_stats = {}
+rna_stats[chr]['bp']   = []
+ran_stats[chr]['stat'] = []
+
+in_file2 =
+fh1_Div_file = open(in_file2, 'r')
+
+for line in fh1_Div_file:
+    # split tabs
+    line = line.split('\t')
+    # append data to each dictionary of list
+    rna_stats[[line[0]]]['bp'].append(line[1])
+    rna_stats[[line[0]]]['stat'].append(line[2])
+
+
+# Add each chromosome to the dictionary and store the
+# basepair and statistical value
+
 
 ###############################################################################
 # End of file
