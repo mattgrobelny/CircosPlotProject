@@ -334,7 +334,7 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
             x1 = x0
             y1 = sy + viz_parameters['key_height']
 
-            # start color gradient
+            # start color gradient along line:
             grad_fil = cairo.LinearGradient(x0, y0, x1,y1)
 
             # pick out color vals from dic
@@ -342,29 +342,16 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
             color_start = color_grad_dic[stat_list[i]][1].split(',')
 
             # add color stops to gradient
-            grad_fil.add_color_stop_rgba(0, float(color_start[0]) , float(color_start[1]), float(color_start[2]),1)
-            grad_fil.add_color_stop_rgba(1, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
-            # for b in range(10):
-            #     grad_fil.add_color_stop_rgba(0, b/10,0.5,0.3, 1)
+            for grad_specturm in range(99):
+                grad_fil.add_color_stop_rgba(grad_specturm/100, float(color_start[0]) , float(color_start[1]), float(color_start[2]),1)
 
-            # grad_fil.add_color_stop_rgba(0.1, 0, 0, 0, 1)
-            # grad_fil.add_color_stop_rgba(0.5, 1, 1, 0, 1)
-            # grad_fil.add_color_stop_rgba(0.9, 0, 0, 0, 1)
+            grad_fil.add_color_stop_rgba(1, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
+
+
 
             cr.set_source(grad_fil)
+            print grad_fil.getColorStopRgba()
             cr.fill()
-
-
-            # a = 0.1
-            # while a < 1.0:
-            #     if count % 2:
-            #         lg1.add_color_stop_rgba(a, 0, 0, 0, 1)
-            #     else:
-            #         lg1.add_color_stop_rgba(a, 1, 0, 0, 1)
-            #     a = a + 0.1
-            #     count = count + 1
-            # cr.set_source(lg1)
-            # cr.fill()
 
             # Draw Key labels
 
@@ -384,8 +371,6 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
             #  trim in black
             cr.set_source_rgb(0, 0, 0)
             cr.stroke()
-
-
 
 # Draw chrm arc for a given level w (1) or wo (0) balck trim
 def chrm_arc(chrm_name, level, trim):
@@ -443,9 +428,7 @@ def draw_chrom_arc(chrm_list, level, trim):
     viz_parameters['last_degree_end'] = 0
 
 # -------- Main Drawing function -------- #
-
-# Draw all chrm arc for a given level w (1) or wo (0) balck trim
-# w 10mb labels
+# Draw all chrm arc for a given level w (1) or wo (0) balck trim w 10mb labels, color
 def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
     viz_parameters['last_degree_end'] = 0
 
@@ -467,7 +450,6 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
             draw_chrom_arc(chrm_list, i, 1)
             color_key(total_levels, location, 0)
             color_key(total_levels, location, 1)
-
 
 ###############################################################################
 # Test 2 - should output
