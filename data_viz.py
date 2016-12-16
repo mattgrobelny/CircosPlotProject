@@ -431,7 +431,7 @@ def draw_chrom_arc(chrm_list, level, trim):
 
 # Data drawing fucntion
 
-
+# Normalizes a stat list value from 0 to 1
 def data_norm(chrm_name, stat_dictionary, list_of_bp_n_stats, type_of_norm):
     stat_val_list =[]
     length_of_list = int(len(list_of_bp_n_stats))
@@ -444,13 +444,12 @@ def data_norm(chrm_name, stat_dictionary, list_of_bp_n_stats, type_of_norm):
     max_stat_val = max(stat_val_list)
     log_min_stat_val= math.log10(min_stat_val)
     log_max_stat_val= math.log10(max_stat_val)
-    print min_stat_val
-    print max_stat_val
+
     for i in range(length_of_list):
         if type_of_norm == "log":
             # normalize from 0 to 1
 
-            stat_val= math.log10((stat_val_list[i]-min_stat_val)/(max_stat_val-min_stat_val))
+            stat_val= float((math.log10(stat_val_list[i]) - log_min_stat_val)/(log_max_stat_val - log_min_stat_val))
 
         else:
             stat_val= (stat_val_list[i]-min_stat_val)/(max_stat_val-min_stat_val)
@@ -562,7 +561,7 @@ fh2_Div_file.close
 
 # Data normalization
 for chrm_name in chrm_name_order_list:
-    data_norm(chrm_name,fst_stats,fst_stats[chrm_name], "def")
+    #data_norm(chrm_name,fst_stats,fst_stats[chrm_name], "def")
     data_norm(chrm_name,rna_stats,rna_stats[chrm_name], "log")
 
 print fst_stats['groupI'][0]
