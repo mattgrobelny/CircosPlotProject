@@ -4,6 +4,7 @@ import cairo
 import sys
 import getopt
 import math
+import numpy as np
 #from data_viz_functions import *
 
 
@@ -30,6 +31,7 @@ stats_dic= {'Div' :(0,1),
 'Rand': (0,1)}
 
 stat_list = ('Div','Fst', 'Rand')
+
 color_grad_dic= {'Div':['0,0,0','0.9,0.1,0.4'],
 'Fst':  ['0,0,0','0.1,0.5,0.4'],
 'Rand': ['0,0,0','0.5,0.5,0.1']}
@@ -181,6 +183,31 @@ def int_to_roman(input):
     return ''.join(result)
 
 ###############################################################################
+# Data norm fucntion
+# Normalizes a stat list value from 0 to 1
+def data_norm(chrm_name, chrm_bp_st_dic, list_of_bp_n_stats, type_of_norm):
+    stat_val_list =[]
+    length_of_list = int(len(list_of_bp_n_stats))
+    min_stat_val = 0
+    max_stat_val = 0
+    for i in range(length_of_list):
+        stat_val_list.append(float(list_of_bp_n_stats[i][1]))
+
+    min_stat_val = min(stat_val_list)
+    max_stat_val = max(stat_val_list)
+    log_min_stat_val= math.log10(min_stat_val)
+    log_max_stat_val= math.log10(max_stat_val)
+
+    for i in range(length_of_list):
+        if type_of_norm == "log":
+            # normalize from 0 to 1
+
+            stat_val= float((math.log10(stat_val_list[i]) - log_min_stat_val)/(log_max_stat_val - log_min_stat_val))
+
+        else:
+            stat_val= (stat_val_list[i]-min_stat_val)/(max_stat_val-min_stat_val)
+
+        chrm_bp_st_dic[chrm_name][i].append(float(stat_val))
 
 # --------  Drawing functions -------- #
 
@@ -306,17 +333,17 @@ def chrm_label(chrm_list, total_levels, roman):
 
 def color_key(total_levels,location,trim): #min, max,color_start, color_end,
     if location == "top_left":
-        working_degree = 225
+        working_degree_key = 225
     elif location == "bottom_right":
-        working_degree = 45
+        working_degree_key  = 45
     elif location == "bottom_left":
-        working_degree = 135
+        working_degree_key  = 135
     else:
         # default to top_right location for key
-        working_degree = 315
+        working_degree_key  = 315
 
-    radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * total_levels + viz_parameters['ring_width'] * total_levels + viz_parameters['key_loc_offset']
-    sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree + viz_parameters['key_degree_off_set'], radius)
+    radius_key = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * total_levels + viz_parameters['ring_width'] * total_levels + viz_parameters['key_loc_offset']
+    sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree_key + viz_parameters['key_degree_off_set'], radius_key)
     sx_key = 0
     for i in range(total_levels):
         sx_key = sx + (viz_parameters['key_width'])* i +viz_parameters['key_sep_distance'] * i
@@ -352,19 +379,20 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
             #print grad_fil.get_color_stop_rgba(1)
 
             cr.set_source(grad_fil)
+            print "1"
             #print grad_fil.getColorStopRgba()
             cr.fill()
 
             # Draw Key labels
 
             # Draw stat name above key
-            draw_label(stat_list[i], sx_key + viz_parameters['key_width']/2 +4, sy-3, 12* viz_parameters['key_label_font_x'],working_degree)
+            draw_label(stat_list[i], sx_key + viz_parameters['key_width']/2 +4, sy-3, 12* viz_parameters['key_label_font_x'],working_degree_key)
 
             # Draw min labels
-            draw_label(str(stats_dic[stat_list[i]][0]), sx_key-2, sy + viz_parameters['key_height'], 9* viz_parameters['key_label_font_x'],working_degree)
+            draw_label(str(stats_dic[stat_list[i]][0]), sx_key-2, sy + viz_parameters['key_height'], 9* viz_parameters['key_label_font_x'],working_degree_key)
 
             # Draw max label
-            draw_label(str(stats_dic[stat_list[i]][1]), sx_key- 2, sy, 9* viz_parameters['key_label_font_x'],working_degree)
+            draw_label(str(stats_dic[stat_list[i]][1]), sx_key- 2, sy, 9* viz_parameters['key_label_font_x'],working_degree_key)
 
 
         else:
@@ -425,64 +453,68 @@ def chrm_arc(chrm_name, level, trim):
 
 # Draw all chrm arc for a given level w (1) or wo (0) balck trim
 def draw_chrom_arc(chrm_list, level, trim):
-    for key in chrm_list:
-        chrm_arc(key, level, trim)
+    for chrm_name in chrm_list:
+        chrm_arc(chrm_name, level, trim)
     viz_parameters['last_degree_end'] = 0
+    # for chrm_name in chrm_list:
+    #     draw_stats(chrm_name, level)
+    # viz_parameters['last_degree_end'] = 0
 
 # Data drawing fucntion
 
-# Normalizes a stat list value from 0 to 1
-def data_norm(chrm_name, stat_dictionary, list_of_bp_n_stats, type_of_norm):
-    stat_val_list =[]
-    length_of_list = int(len(list_of_bp_n_stats))
-    min_stat_val = 0
-    max_stat_val = 0
-    for i in range(length_of_list):
-        stat_val_list.append(float(list_of_bp_n_stats[i][1]))
+def draw_stats(chrm_name, level):
+    work_dic = level_to_dic[level]
+    # Create intial arc
+    radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * level + viz_parameters['ring_width'] * level
 
-    min_stat_val = min(stat_val_list)
-    max_stat_val = max(stat_val_list)
-    log_min_stat_val= math.log10(min_stat_val)
-    log_max_stat_val= math.log10(max_stat_val)
+    # calculate the number of degrees the are will span based on chrm size
+    viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
 
-    for i in range(length_of_list):
-        if type_of_norm == "log":
-            # normalize from 0 to 1
 
-            stat_val= float((math.log10(stat_val_list[i]) - log_min_stat_val)/(log_max_stat_val - log_min_stat_val))
+    arc_length= float(2 * math.pi * radius*( viz_parameters['total_degrees'] / 360))
 
+    degrees_per_pixel = float(arc_length/ viz_parameters['total_degrees'])
+
+    window_size_for_smoothing = float(chr_size_dic[chrm_name] / arc_length)
+
+    # Data smoothing
+    window_bp_counter = 0
+    windowed_stats = []
+    smoothed_stats = [] # per pixel
+
+    for list_it in range(len(work_dic)):
+        print work_dic[chrm_name][list_it][-1]
+        if  window_bp_counter < work_dic[chrm_name][list_it][0] or work_dic[chrm_name][list_it][0] <= window_bp_counter + window_size_for_smoothing:
+            windowed_stats.append(work_dic[chrm_name][list_it][-1])
+        elif len(windowed_stats) == 0:
+            window_bp_counter = window_bp_counter + window_size_for_smoothing
         else:
-            stat_val= (stat_val_list[i]-min_stat_val)/(max_stat_val-min_stat_val)
+            smoothed_stats.append(float(np.mean(windowed_stats)))
+            window_bp_counter = window_bp_counter + window_size_for_smoothing
 
-        stat_dictionary[chrm_name][i].append(float(stat_val))
+    # at this point each value in smoothed_stats reperesents the stat value that needs to be drawn for each pixel degree along the chrm arc
 
-# def draw_stats(chrm_list, level,chrm_bp_st_dic, norm_type):
-#     for chrm_name in chrm_list:
-#         # Create intial arc
-#         radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * level + viz_parameters['ring_width'] * level
-#
-#         # calculate the number of degrees the are will span based on chrm size
-#         viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
-#
-#
-#         arc_length= float(2 * math.pi * radius*( viz_parameters['total_degrees'] / 360))
-#         degrees_per_pixel = arc_length/ viz_parameters['total_degrees']
-#         total_pixels = viz_parameters['total_degrees'] * degrees_per_pixel
-#
-#         #normalize data
-#         for stat in chrm_bp_st_dic[chrm_name]:
-#
-#         # stat is (bp,stat)
-#         # draw first arc based on the ending of the pervious arc
-#         sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius)
-#
-#         cr.move_to(sx, sy)
-#
-#         line_x, line_y = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius + viz_parameters['ring_width'])
-#         cr.line_to(line_x, line_y)
-#
-#         cr.stroke
-#
+    # stat is (bp,stat)
+    # draw first arc based on the ending of the pervious arc
+
+    #print smoothed_stats
+    working_degree = viz_parameters['last_degree_end']
+    for smoothed_stat in smoothed_stats:
+
+        sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius)
+
+        cr.move_to(sx, sy)
+
+        line_x, line_y = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius + viz_parameters['ring_width'])
+        cr.line_to(line_x, line_y)
+
+        cr.set_source_rgb(0.5, 0.3, 0.9)
+        cr.stroke
+
+        working_degree = float(working_degree + degrees_per_pixel)
+    # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
+    viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
+
 # -------- Main Drawing function -------- #
 # Draw all chrm arc for a given level w (1) or wo (0) balck trim w 10mb labels, color
 def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
@@ -494,19 +526,21 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
     # draw chm labels
     chrm_label(chrm_list, total_levels, roman)
     viz_parameters['last_degree_end'] = 0
-
     #Draw all chrm arcs
     if trim == 0:
         for i in range(total_levels):
+            viz_parameters['last_degree_end'] = 0
             draw_chrom_arc(chrm_list, i, 0)
             color_key(total_levels, location, 0)
     else:
         for i in range(total_levels):
-            draw_chrom_arc(chrm_list, i, 0)
-            color_key(total_levels, location, 0)
-            # add data import here
             draw_chrom_arc(chrm_list, i, 1)
+            viz_parameters['last_degree_end'] = 0
+
+            draw_chrom_arc(chrm_list, i, 0)
             color_key(total_levels, location, 1)
+            color_key(total_levels, location, 0)
+
 
 ###############################################################################
 
@@ -519,6 +553,8 @@ for chrm_name in chrm_name_order_list:
     fst_stats[chrm_name] = []
     rna_stats[chrm_name] = []
 
+level_to_dic ={0: fst_stats,
+1 :rna_stats }
 
 # Add each chromosome to the dictionary and store the
 # basepair and statistical value
@@ -564,8 +600,7 @@ for chrm_name in chrm_name_order_list:
     #data_norm(chrm_name,fst_stats,fst_stats[chrm_name], "def")
     data_norm(chrm_name,rna_stats,rna_stats[chrm_name], "log")
 
-print fst_stats['groupI'][0]
-print rna_stats['groupI'][0]
+
 #  Thus:
 #  For rna_stats['chrmII'] outputs ["bp","stat"]
 #  rna_stats['chrmII'][0] = ["bp","stat"]
@@ -576,7 +611,7 @@ print rna_stats['groupI'][0]
 ###############################################################################
 # Test 2 - should output
 
-draw_chrom_arc_w_label(chrm_name_order_list, 3, 1, 1,"def")
+draw_chrom_arc_w_label(chrm_name_order_list, 2, 1, 1,"def")
 ###############################################################################
 
 
