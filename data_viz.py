@@ -342,12 +342,12 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
             color_start = color_grad_dic[stat_list[i]][1].split(',')
 
             # add color stops to gradient
-            for grad_specturm in range(99):
-                grad_fil.add_color_stop_rgba(grad_specturm/100, float(color_start[0]) , float(color_start[1]), float(color_start[2]),1)
+            # for grad_specturm in range(99):
+            #     grad_fil.add_color_stop_rgba(grad_specturm/100, float(color_start[0]) , float(color_start[1]), float(color_start[2]),1)
+            grad_fil.add_color_stop_rgba(0, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
+            grad_fil.add_color_stop_rgba(1, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
 
-            #grad_fil.add_color_stop_rgba(1, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
-
-            print grad_fil.get_color_stop_rgba(1)
+            #print grad_fil.get_color_stop_rgba(1)
 
             cr.set_source(grad_fil)
             #print grad_fil.getColorStopRgba()
@@ -452,49 +452,68 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
             color_key(total_levels, location, 1)
 
 ###############################################################################
-# Test 2 - should output
-
-draw_chrom_arc_w_label(chrm_name_order_list, 3, 1, 1,"def")
-###############################################################################
 
 # # Data import
 
-# Open fst Data file
-in_file =
-fh1_fst_file = open(in_file, 'r')
-
 # Create fst data dictionary
 fst_stats = {}
-fst_stats[chr]['bp']   = []
-fst_stats[chr]['stat'] = []
-
-# add each chrm, bp and stat pt to dictionary
-for line in fh1_fst_file:
-    # split tabs
-    line = line.split('\t')
-    # append data to each dictionary of  list
-    fst_stats[[line[0]]]['bp'].append(line[1])
-    fst_stats[[line[0]]]['stat'].append(line[2])
-fh1_fst_file.close()
-
-#repeate for Div data_viz
 rna_stats = {}
-rna_stats[chr]['bp']   = []
-ran_stats[chr]['stat'] = []
-
-in_file2 =
-fh1_Div_file = open(in_file2, 'r')
-
-for line in fh1_Div_file:
-    # split tabs
-    line = line.split('\t')
-    # append data to each dictionary of list
-    rna_stats[[line[0]]]['bp'].append(line[1])
-    rna_stats[[line[0]]]['stat'].append(line[2])
+for chrm_name in chrm_name_order_list:
+    fst_stats[chrm_name] = []
+    rna_stats[chrm_name] = []
 
 
 # Add each chromosome to the dictionary and store the
 # basepair and statistical value
+# add each chrm, bp and stat pt to dictionary
+
+# Open fst Data file
+in_file = './Pop_fst_data.tsv'
+fh1_fst_file = open(in_file, 'r')
+
+# skip header
+next(fh1_fst_file)
+for line in fh1_fst_file:
+    #strip new line char
+    line = line.strip('\n')
+    # remove spaces
+    line = line.replace(" ", "")
+    # split tabs
+    line = line.split('\t')
+    # append data to each dictionary of  list
+    fst_stats[line[0]].append([line[1],line[2]])
+fh1_fst_file.close
+
+#repeate for Div data_viz
+in_file2 = './Pop_div_data.tsv'
+fh2_Div_file = open(in_file2, 'r')
+
+# skip header
+next(fh2_Div_file)
+for line in fh2_Div_file:
+    #strip new line char
+    line = line.strip('\n')
+    # remove spaces
+    line = line.replace(" ", "")
+    # split tabs
+    line = line.split('\t')
+    # append data to each dictionary of list
+    rna_stats[line[0]].append([line[1],line[2]])
+fh2_Div_file.close
+# Thus:
+# For rna_stats['chrmII'] outputs ["bp","stat"]
+#  rna_stats['chrmII'][0] = ["bp","stat"]
+#  rna_stats['chrmII'][0][0] = Base pair
+# rna_stats['chrmII'][0][1] = stats
+
+
+
+
+###############################################################################
+# Test 2 - should output
+
+draw_chrom_arc_w_label(chrm_name_order_list, 3, 1, 1,"def")
+###############################################################################
 
 
 ###############################################################################
