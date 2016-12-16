@@ -1,10 +1,11 @@
-#!/usr/bin/python
 
 #import cairocffi as cairo
 import cairo
 import sys
 import getopt
 import math
+#from data_viz_functions import *
+
 
 
 ###############################################################################
@@ -26,14 +27,14 @@ chrm_name_order_list= ('groupI', 'groupII','groupIII', 'groupIV',
 
 stats_dic= {'Div' :(0,1),
 'Fst': (0, 1),
-'Rand': (0,1)
-}
+'Rand': (0,1)}
+
 stat_list = ('Div','Fst', 'Rand')
 color_grad_dic= {'Div':['0,0,0','0.9,0.1,0.4'],
 'Fst':  ['0,0,0','0.1,0.5,0.4'],
-'Rand': ['0,0,0','0.5,0.5,0.1']
+'Rand': ['0,0,0','0.5,0.5,0.1']}
 
-}
+
 ###############################################################################
 viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'number_of_chr': len(chr_size_dic),
@@ -78,6 +79,7 @@ outpath='/home/mgrobelny/Scripts/github/Data-viz-Circle-plot/data_viz.pdf'
 ps = cairo.PDFSurface(str(outpath), float(img['height']), float(img['width']))
 cr = cairo.Context(ps)
 
+# import drawing functions
 
 ###############################################################################
 # # default parameters
@@ -427,6 +429,61 @@ def draw_chrom_arc(chrm_list, level, trim):
         chrm_arc(key, level, trim)
     viz_parameters['last_degree_end'] = 0
 
+# Data drawing fucntion
+
+
+def data_norm(chrm_name, stat_dictionary, list_of_bp_n_stats, type_of_norm):
+    stat_val_list =[]
+    length_of_list = int(len(list_of_bp_n_stats))
+    min_stat_val = 0
+    max_stat_val = 0
+    for i in range(length_of_list):
+        stat_val_list.append(float(list_of_bp_n_stats[i][1]))
+
+    min_stat_val = min(stat_val_list)
+    max_stat_val = max(stat_val_list)
+    log_min_stat_val= math.log10(min_stat_val)
+    log_max_stat_val= math.log10(max_stat_val)
+    print min_stat_val
+    print max_stat_val
+    for i in range(length_of_list):
+        if type_of_norm == "log":
+            # normalize from 0 to 1
+
+            stat_val= math.log10((stat_val_list[i]-min_stat_val)/(max_stat_val-min_stat_val))
+
+        else:
+            stat_val= (stat_val_list[i]-min_stat_val)/(max_stat_val-min_stat_val)
+
+        stat_dictionary[chrm_name][i].append(float(stat_val))
+
+# def draw_stats(chrm_list, level,chrm_bp_st_dic, norm_type):
+#     for chrm_name in chrm_list:
+#         # Create intial arc
+#         radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * level + viz_parameters['ring_width'] * level
+#
+#         # calculate the number of degrees the are will span based on chrm size
+#         viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
+#
+#
+#         arc_length= float(2 * math.pi * radius*( viz_parameters['total_degrees'] / 360))
+#         degrees_per_pixel = arc_length/ viz_parameters['total_degrees']
+#         total_pixels = viz_parameters['total_degrees'] * degrees_per_pixel
+#
+#         #normalize data
+#         for stat in chrm_bp_st_dic[chrm_name]:
+#
+#         # stat is (bp,stat)
+#         # draw first arc based on the ending of the pervious arc
+#         sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius)
+#
+#         cr.move_to(sx, sy)
+#
+#         line_x, line_y = get_x_y_coordinates(img['center_x'], img['center_y'], viz_parameters['last_degree_end'], radius + viz_parameters['ring_width'])
+#         cr.line_to(line_x, line_y)
+#
+#         cr.stroke
+#
 # -------- Main Drawing function -------- #
 # Draw all chrm arc for a given level w (1) or wo (0) balck trim w 10mb labels, color
 def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
@@ -447,8 +504,9 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
     else:
         for i in range(total_levels):
             draw_chrom_arc(chrm_list, i, 0)
-            draw_chrom_arc(chrm_list, i, 1)
             color_key(total_levels, location, 0)
+            # add data import here
+            draw_chrom_arc(chrm_list, i, 1)
             color_key(total_levels, location, 1)
 
 ###############################################################################
@@ -500,13 +558,20 @@ for line in fh2_Div_file:
     # append data to each dictionary of list
     rna_stats[line[0]].append([line[1],line[2]])
 fh2_Div_file.close
-# Thus:
-# For rna_stats['chrmII'] outputs ["bp","stat"]
+
+
+# Data normalization
+for chrm_name in chrm_name_order_list:
+    data_norm(chrm_name,fst_stats,fst_stats[chrm_name], "def")
+    data_norm(chrm_name,rna_stats,rna_stats[chrm_name], "log")
+
+print fst_stats['groupI'][0]
+print rna_stats['groupI'][0]
+#  Thus:
+#  For rna_stats['chrmII'] outputs ["bp","stat"]
 #  rna_stats['chrmII'][0] = ["bp","stat"]
 #  rna_stats['chrmII'][0][0] = Base pair
-# rna_stats['chrmII'][0][1] = stats
-
-
+#  rna_stats['chrmII'][0][1] = stats
 
 
 ###############################################################################
