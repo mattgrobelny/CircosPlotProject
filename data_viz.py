@@ -5,6 +5,8 @@ import sys
 import getopt
 import math
 import numpy as np
+
+import matplotlib.pyplot as plt
 #from data_viz_functions import *
 
 
@@ -72,6 +74,11 @@ img['center_x']   = img['width'] / 2.0
 img['center_y']   = img['height'] / 2.0
 img['font_size']  = 16
 
+###############################################################################
+
+color_stat_mapper_dic ={}
+for stat in stat_list:
+    color_stat_mapper_dic[stat] = { }
 ###############################################################################
 #
 # Define the path our file
@@ -209,6 +216,41 @@ def data_norm(chrm_name, chrm_bp_st_dic, list_of_bp_n_stats, type_of_norm):
 
         chrm_bp_st_dic[chrm_name][i].append(float(stat_val))
 
+# def stat_to_color(stat, type_of_norm ):
+#     min_stat_val = 0
+#     max_stat_val = viz_parameters['key_height']
+#     log_min_stat_val= 0
+#     log_max_stat_val= math.log10(viz_parameters['key_height'])
+#
+#     stat_numer_count = 1
+#
+#     color_group = color_grad_dic[stat]
+#     number_of_colors = len(color_group)
+#     color_range = int(viz_parameters['key_height']/number_of_colors)
+#
+#     for color_num in range(number_of_colors):
+#         for alpha_div in range(1,color_range+1):
+#             if type_of_norm == "log":
+#                 # normalize from 0 to 1
+#                 normalized_val= float((math.log10(stat_numer_count) - log_min_stat_val)/(log_max_stat_val - log_min_stat_val))
+#
+#             else:
+#                 normalized_val= float((stat_numer_count-min_stat_val)/(max_stat_val-min_stat_val))
+#
+#             #
+#             split_vals = color_group[color_num].split(',')
+#             color_out = [float(1/alpha_div),float(split_vals[0]),float(split_vals[1]),float(split_vals[2])]
+#             color_stat_mapper_dic[stat][normalized_val] =  color_out
+#
+#             stat_numer_count = stat_numer_count + 1
+#
+#     print color_stat_mapper_dic[stat].keys()
+#     print
+color_list = plt.cm.Set2(np.linspace(0, 1, 12))
+print color_list
+plot_color_gradients(color_list)
+
+plt.show()
 # --------  Drawing functions -------- #
 
 # Draw a circle of arcs based on a list of chr which corresponed to the chrm size dic
@@ -363,26 +405,43 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
             x1 = x0
             y1 = sy + viz_parameters['key_height']
 
-            # start color gradient along line:
-            grad_fil = cairo.LinearGradient(x0, y0, x1,y1)
+            # # start color gradient along line:
+            # grad_fil = cairo.LinearGradient(x0, y0, x1,y1)
+            #
+            # # pick out color vals from dic
+            # color_end = color_grad_dic[stat_list[i]][0].split(',')
+            # color_mid = color_grad_dic[stat_list[i]][1].split(',')
+            # color_start = color_grad_dic[stat_list[i]][2].split(',')
+            #
+            # # add color stops to gradient
+            # # for grad_specturm in range(99):
+            # #    grad_fil.add_color_stop_rgba(grad_specturm/100, float(color_start[0]) , float(color_start[1]), float(color_start[2]),1)
+            # grad_fil.add_color_stop_rgba(0, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
+            # grad_fil.add_color_stop_rgba(0.5, float(color_mid[0]), float(color_mid[1]), float(color_mid[2]),1)
+            # grad_fil.add_color_stop_rgba(1, float(color_start[0]), float(color_start[1]), float(color_start[2]),1)
+            #
+            # #print grad_fil.get_color_stop_rgba(1)
 
-            # pick out color vals from dic
-            color_end = color_grad_dic[stat_list[i]][0].split(',')
-            color_mid = color_grad_dic[stat_list[i]][1].split(',')
-            color_start = color_grad_dic[stat_list[i]][2].split(',')
+            #Idea 1
+            # color_step_length =  viz_parameters['key_height']
+            # color_increment_counter =0
+            # for stat in stat_list:
+            #     color_group = color_grad_dic[stat]
+            #     number_of_colors = len(color_group)
+            #         for color_step in range(int(color_step_length/number_of_colors)):
+            #             for color in range(number_of_color-1):
+            #                 color = []
+            #                 if color_step <= float(color_step_length/color):
+            #                     color_1_to_mix = color_group[color].split(',')
+            #                     color_2_to_mix = color_group[color + 1].split(',')
+            #                     if color_1_to_mix[0] <= color_2_to_mix[0]:
+            #                         color_out[0] = (color_1_to_mix[0] - color_2_to_mix[0])/
 
-            # add color stops to gradient
-            # for grad_specturm in range(99):
-            #    grad_fil.add_color_stop_rgba(grad_specturm/100, float(color_start[0]) , float(color_start[1]), float(color_start[2]),1)
-            grad_fil.add_color_stop_rgba(0, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
-            grad_fil.add_color_stop_rgba(1, float(color_mid[0]), float(color_mid[1]), float(color_mid[2]),1)
-            grad_fil.add_color_stop_rgba(1, float(color_start[0]), float(color_start[1]), float(color_start[2]),1)
+            # idea 2 mix alpha
 
-            #print grad_fil.get_color_stop_rgba(1)
-
-            cr.set_source(grad_fil)
-            #print grad_fil.getColorStopRgba()
-            cr.fill()
+            # cr.set_source(grad_fil)
+            # #print grad_fil.getColorStopRgba()
+            # cr.fill()
 
             # Draw Key labels
 
@@ -544,6 +603,8 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
 
 ###############################################################################
 
+
+
 # # Data import
 
 # Create fst data dictionary
@@ -607,6 +668,11 @@ for chrm_name in chrm_name_order_list:
 #  rna_stats['chrmII'][0][0] = Base pair
 #  rna_stats['chrmII'][0][1] = stats
 
+
+# Test color produciton
+
+# stat_to_color('Div', 'def')
+# stat_to_color('Fst', "def")
 
 ###############################################################################
 # Test 2 - should output
