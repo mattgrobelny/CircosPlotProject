@@ -487,11 +487,12 @@ def chrm_arc(chrm_name, level, trim):
     ############################
     # Add black trim to chrm arcs 0 no , 1 yes
     if trim == 0:
+        pass
         # cr.set_source_rgb(viz_parameters['fill_color'])
 
         # fill with grey color
-        cr.set_source_rgb(0.4, 0.4, 0.4)
-        cr.fill()
+        #cr.set_source_rgb(0.4, 0.4, 0.4)
+        #cr.fill()
     else:
         #cr.set_source_rgb(viz_parameters['trim_color'])
 
@@ -509,85 +510,84 @@ def draw_chrom_arc(chrm_list, level, trim):
     for chrm_name in chrm_list:
         chrm_arc(chrm_name, level, trim)
     viz_parameters['last_degree_end'] = 0
-    for chrm_name in chrm_list:
-        draw_stats(chrm_name, level)
-    viz_parameters['last_degree_end'] = 0
+
 
 # Data drawing fucntion
 
-def draw_stats(chrm_name, level):
-    work_dic = level_to_dic[level]
+def draw_stats(chrm_list, level):
+    for chrm_name in chrm_list:
+        work_dic = level_to_dic[level]
+        radius_stat = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * level + viz_parameters['ring_width'] * level
 
-    # Create intial arc
-    radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * level + viz_parameters['ring_width'] * level
-
-    # calculate the number of degrees the are will span based on chrm size
-    viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
-
-
-    arc_length= float(2 * math.pi * radius*( viz_parameters['total_degrees'] / 360))
-
-    degrees_per_pixel = float(arc_length/ viz_parameters['total_degrees'])
-
-    window_size_for_smoothing = float(chr_size_dic[chrm_name] / arc_length)
-
-    # Data smoothing
-    window_bp_counter = 0
-    windowed_stats = []
-    smoothed_stats = [] # per pixel
-    emp_stats_processed =0
-    for list_it in range(len(work_dic[chrm_name])):
-        if  window_bp_counter > int(work_dic[chrm_name][list_it][0]):
-            windowed_stats.append(work_dic[chrm_name][list_it][-1])
-        elif window_bp_counter <= int(work_dic[chrm_name][list_it][0]) and len(windowed_stats) == 0:
-            window_bp_counter = window_bp_counter + window_size_for_smoothing
-            # need to correct for missing data
-            smoothed_stats.append('NA')
-        else:
-            #print len(windowed_stats)
-            smoothed_stats.append(float(np.mean(windowed_stats)))
-            window_bp_counter = window_bp_counter + window_size_for_smoothing
-            windowed_stats = []
-
-    # code to fix missing data
-    for i in range(len(smoothed_stats)-1):
-
-        if smoothed_stats[i] == "NA":
-            if smoothed_stats[i-1] != "NA":
-                smoothed_stats[i] = smoothed_stats[i-1]
-            elif smoothed_stats[i + 1] != "NA":
-                smoothed_stats[i] = smoothed_stats[i+1]
+        #print radius_stat
+        # Create intial arc
+        # calculate the number of degrees the are will span based on chrm size
+        viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
 
 
-            #smoothed_stats[i] = float((smoothed_stats[i-1] + smoothed_stats[i+1])/2)
+        arc_length= float(2 * math.pi * radius_stat*( viz_parameters['total_degrees'] / 360))
 
-    # at this point each value in smoothed_stats reperesents the stat value that needs to be drawn for each pixel degree along the chrm arc
+        degrees_per_pixel = float(viz_parameters['total_degrees']/arc_length)
+        print degrees_per_pixel
+        window_size_for_smoothing = float(chr_size_dic[chrm_name] / arc_length)
 
-    # stat is (bp,stat)
-    # draw first arc based on the ending of the pervious arc
+        # Data smoothing
+        window_bp_counter = 0
+        windowed_stats = []
+        smoothed_stats = [] # per pixel
+        emp_stats_processed =0
+        for list_it in range(len(work_dic[chrm_name])):
+            if  window_bp_counter > int(work_dic[chrm_name][list_it][0]):
+                windowed_stats.append(work_dic[chrm_name][list_it][-1])
+            elif window_bp_counter <= int(work_dic[chrm_name][list_it][0]) and len(windowed_stats) == 0:
+                window_bp_counter = window_bp_counter + window_size_for_smoothing
+                # need to correct for missing data
+                smoothed_stats.append('NA')
+            else:
+                #print len(windowed_stats)
+                smoothed_stats.append(float(np.mean(windowed_stats)))
+                window_bp_counter = window_bp_counter + window_size_for_smoothing
+                windowed_stats = []
+
+        # code to fix missing data
+        for i in range(len(smoothed_stats)-1):
+
+            if smoothed_stats[i] == "NA":
+                if smoothed_stats[i-1] != "NA":
+                    smoothed_stats[i] = smoothed_stats[i-1]
+                elif smoothed_stats[i + 1] != "NA":
+                    smoothed_stats[i] = smoothed_stats[i+1]
 
 
-    working_degree = viz_parameters['last_degree_end']
-    print chrm_name
-    print len(smoothed_stats) - arc_length
+                #smoothed_stats[i] = float((smoothed_stats[i-1] + smoothed_stats[i+1])/2)
 
-    print emp_stats_processed
-    for smoothed_stat in smoothed_stats:
+        # at this point each value in smoothed_stats reperesents the stat value that needs to be drawn for each pixel degree along the chrm arc
 
-        sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius)
+        # stat is (bp,stat)
+        # draw first arc based on the ending of the pervious arc
 
-        cr.move_to(sx, sy)
 
-        line_x, line_y = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius + viz_parameters['ring_width'])
-        cr.line_to(line_x, line_y)
+        working_degree = viz_parameters['last_degree_end']
+        for smoothed_stat in smoothed_stats:
 
-        cr.set_dash([])
-        cr.set_source_rgb(0, 0.3, 0)
-        cr.stroke()
+            sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius_stat)
 
-        working_degree = float(working_degree + degrees_per_pixel)
-    # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
-    viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
+            cr.move_to(sx, sy)
+
+            line_x, line_y = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius_stat - viz_parameters['ring_width'])
+            cr.line_to(line_x, line_y)
+
+            cr.set_dash([])
+            cr.set_line_width(1.5)
+            if level == 0:
+                cr.set_source_rgb(0, 0.3, 0)
+            else:
+                cr.set_source_rgb(0.5, 0.3, 0.6)
+            cr.stroke()
+
+            working_degree = float(working_degree + degrees_per_pixel)
+        # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
+        viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
 
 # -------- Main Drawing function -------- #
 # Draw all chrm arc for a given level w (1) or wo (0) balck trim w 10mb labels, color
@@ -601,13 +601,21 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
     chrm_label(chrm_list, total_levels, roman)
     viz_parameters['last_degree_end'] = 0
     #Draw all chrm arcs
+
     if trim == 0:
         for i in range(total_levels):
+            viz_parameters['last_degree_end'] = 0
+
+            draw_stats(chrm_list, i)
+
             viz_parameters['last_degree_end'] = 0
             draw_chrom_arc(chrm_list, i, 0)
             color_key(total_levels, location, 0)
     else:
         for i in range(total_levels):
+            draw_stats(chrm_list, i)
+
+            viz_parameters['last_degree_end'] = 0
             draw_chrom_arc(chrm_list, i, 0)
             viz_parameters['last_degree_end'] = 0
             draw_chrom_arc(chrm_list, i, 1)
