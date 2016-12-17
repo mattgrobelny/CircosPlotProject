@@ -32,8 +32,8 @@ stats_dic= {'Div' :(0,1),
 
 stat_list = ('Div','Fst', 'Rand')
 
-color_grad_dic= {'Div':['0,0,1','0.9,0.1,0.4'],
-'Fst':  ['0,2,0','0.1,0.5,0.4']}
+color_grad_dic= {'Div':['0.2,0,0.9','0.1,0.9,0.4','0.9,0.1,0.4'],
+'Fst':  ['0.5,2.0,0.1','0.9,0.5,0.4','0.1,0.5,0.4']}
 #'Rand': ['0,0,0','0.5,0.5,0.1']}
 
 
@@ -368,13 +368,15 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
 
             # pick out color vals from dic
             color_end = color_grad_dic[stat_list[i]][0].split(',')
-            color_start = color_grad_dic[stat_list[i]][1].split(',')
+            color_mid = color_grad_dic[stat_list[i]][1].split(',')
+            color_start = color_grad_dic[stat_list[i]][2].split(',')
 
             # add color stops to gradient
             # for grad_specturm in range(99):
             #    grad_fil.add_color_stop_rgba(grad_specturm/100, float(color_start[0]) , float(color_start[1]), float(color_start[2]),1)
             grad_fil.add_color_stop_rgba(0, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
-            grad_fil.add_color_stop_rgba(1, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
+            grad_fil.add_color_stop_rgba(1, float(color_mid[0]), float(color_mid[1]), float(color_mid[2]),1)
+            grad_fil.add_color_stop_rgba(1, float(color_start[0]), float(color_start[1]), float(color_start[2]),1)
 
             #print grad_fil.get_color_stop_rgba(1)
 
