@@ -32,9 +32,9 @@ stats_dic= {'Div' :(0,1),
 
 stat_list = ('Div','Fst', 'Rand')
 
-color_grad_dic= {'Div':['0,0,0','0.9,0.1,0.4'],
-'Fst':  ['0,0,0','0.1,0.5,0.4'],
-'Rand': ['0,0,0','0.5,0.5,0.1']}
+color_grad_dic= {'Div':['0,0,1','0.9,0.1,0.4'],
+'Fst':  ['0,2,0','0.1,0.5,0.4']}
+#'Rand': ['0,0,0','0.5,0.5,0.1']}
 
 
 ###############################################################################
@@ -372,14 +372,13 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
 
             # add color stops to gradient
             # for grad_specturm in range(99):
-            #     grad_fil.add_color_stop_rgba(grad_specturm/100, float(color_start[0]) , float(color_start[1]), float(color_start[2]),1)
+            #    grad_fil.add_color_stop_rgba(grad_specturm/100, float(color_start[0]) , float(color_start[1]), float(color_start[2]),1)
             grad_fil.add_color_stop_rgba(0, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
             grad_fil.add_color_stop_rgba(1, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
 
             #print grad_fil.get_color_stop_rgba(1)
 
             cr.set_source(grad_fil)
-            print "1"
             #print grad_fil.getColorStopRgba()
             cr.fill()
 
@@ -455,7 +454,6 @@ def chrm_arc(chrm_name, level, trim):
 def draw_chrom_arc(chrm_list, level, trim):
     for chrm_name in chrm_list:
         chrm_arc(chrm_name, level, trim)
-    viz_parameters['last_degree_end'] = 0
     # for chrm_name in chrm_list:
     #     draw_stats(chrm_name, level)
     # viz_parameters['last_degree_end'] = 0
@@ -534,12 +532,12 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
             color_key(total_levels, location, 0)
     else:
         for i in range(total_levels):
-            draw_chrom_arc(chrm_list, i, 1)
-            viz_parameters['last_degree_end'] = 0
-
             draw_chrom_arc(chrm_list, i, 0)
-            color_key(total_levels, location, 1)
+            viz_parameters['last_degree_end'] = 0
+            draw_chrom_arc(chrm_list, i, 1)
+
             color_key(total_levels, location, 0)
+            color_key(total_levels, location, 1)
 
 
 ###############################################################################
