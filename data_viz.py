@@ -242,7 +242,8 @@ def data_norm(chrm_name, chrm_bp_st_dic, list_of_bp_n_stats, type_of_norm):
         chrm_bp_st_dic[chrm_name][i].append(float(stat_val))
 
 def stat_to_color(stat, type_of_norm):
-    
+
+    # create color list based on color group
     color = color_grad_dic[stat]
     number_of_color_breaks = viz_parameters['key_height']
     color_list = 0
@@ -256,6 +257,7 @@ def stat_to_color(stat, type_of_norm):
 
     stat_numer_count = 1
 
+    # save color to normalized pixel space values between 1 and 0
     for color in color_list:
         if type_of_norm == "log":
             # normalize from 0 to 1
@@ -405,18 +407,39 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
     sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree_key + viz_parameters['key_degree_off_set'], radius_key)
     sx_key = 0
     for i in range(total_levels):
+        level_to_dic ={0: fst_stats,
+        1 :rna_stats }
         sx_key = sx + (viz_parameters['key_width'])* i +viz_parameters['key_sep_distance'] * i
-        cr.move_to(sx_key, sy)
-        cr.rectangle(sx_key, sy, viz_parameters['key_width'], viz_parameters['key_height'])
-        cr.close_path()
-        cr.set_line_width(viz_parameters['width'] - 1)
-        cr.set_dash([])
+
 
         ############################
         # Add black trim to key 0 no , 1 yes
 
         if trim == 0:
-            # fill with color gradiant
+            # fill with color gradient
+            #Pick stat based on level
+            stat_key = level_to_dic[i]
+
+            # sort all norm values and color each line basaed on the dictionary of color
+            for norm_val in sorted(color_stat_mapper_dic[stat_key].keys())
+                color = color_stat_mapper_dic[stat_key][norm_val]
+
+
+                cr.set_source_rgba(color[0], color[1], color[2], color[3])
+                it_y = sy
+                for line_y in range(viz_parameters['key_height']):
+
+                    cr.move_to(sx_key, it_y)
+                    cr.line_to(sx_key + viz_parameters['key_width'])
+                    cr.set_dash([])
+                    cr.stroke()
+
+                    # update the y pos of next line
+                    it_y = it_y + line_y
+
+)
+
+
             x0 = sx_key +viz_parameters['key_width']/2
             y0 = sy
             x1 = x0
@@ -476,6 +499,11 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
             #cr.set_source_rgb(viz_parameters['trim_color'])
 
             #  trim in black
+            cr.move_to(sx_key, sy)
+            cr.rectangle(sx_key, sy, viz_parameters['key_width'], viz_parameters['key_height'])
+            cr.close_path()
+            cr.set_line_width(viz_parameters['width'] - 1)
+            cr.set_dash([])
             cr.set_source_rgb(0, 0, 0)
             cr.stroke()
 
@@ -692,6 +720,7 @@ for chrm_name in chrm_name_order_list:
 # stat_to_color('Fst', "def")
 stat_to_color('Div',"log")
 stat_to_color('Fst', "norm")
+
 ###############################################################################
 # Test 2 - should output
 
