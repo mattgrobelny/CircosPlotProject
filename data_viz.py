@@ -415,7 +415,7 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
 
         if trim == 0:
             # fill with color gradient
-            #Pick stat based on level
+            # Pick stat based on level
             key = stat_list[i]
             it_y = sy
             # sort all norm values and color each line basaed on the dictionary of color
@@ -430,53 +430,6 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
 
                 # update the y pos of next line
                 it_y = it_y + +1
-                print it_y
-
-
-
-
-            # x0 = sx_key +viz_parameters['key_width']/2
-            # y0 = sy
-            # x1 = x0
-            # y1 = sy + viz_parameters['key_height']
-
-            # # start color gradient along line:
-            # grad_fil = cairo.LinearGradient(x0, y0, x1,y1)
-            #
-            # # pick out color vals from dic
-            # color_end = color_grad_dic[stat_list[i]][0].split(',')
-            # color_mid = color_grad_dic[stat_list[i]][1].split(',')
-            # color_start = color_grad_dic[stat_list[i]][2].split(',')
-            #
-            # # add color stops to gradient
-            # # for grad_specturm in range(99):
-            # #    grad_fil.add_color_stop_rgba(grad_specturm/100, float(color_start[0]) , float(color_start[1]), float(color_start[2]),1)
-            # grad_fil.add_color_stop_rgba(0, float(color_end[0]), float(color_end[1]), float(color_end[2]),1)
-            # grad_fil.add_color_stop_rgba(0.5, float(color_mid[0]), float(color_mid[1]), float(color_mid[2]),1)
-            # grad_fil.add_color_stop_rgba(1, float(color_start[0]), float(color_start[1]), float(color_start[2]),1)
-            #
-            # #print grad_fil.get_color_stop_rgba(1)
-
-            #Idea 1
-            # color_step_length =  viz_parameters['key_height']
-            # color_increment_counter =0
-            # for stat in stat_list:
-            #     color_group = color_grad_dic[stat]
-            #     number_of_colors = len(color_group)
-            #         for color_step in range(int(color_step_length/number_of_colors)):
-            #             for color in range(number_of_color-1):
-            #                 color = []
-            #                 if color_step <= float(color_step_length/color):
-            #                     color_1_to_mix = color_group[color].split(',')
-            #                     color_2_to_mix = color_group[color + 1].split(',')
-            #                     if color_1_to_mix[0] <= color_2_to_mix[0]:
-            #                         color_out[0] = (color_1_to_mix[0] - color_2_to_mix[0])/
-
-            # idea 2 mix alpha
-
-            # cr.set_source(grad_fil)
-            # #print grad_fil.getColorStopRgba()
-            # cr.fill()
 
             # Draw Key labels
 
@@ -555,14 +508,16 @@ def chrm_arc(chrm_name, level, trim):
 def draw_chrom_arc(chrm_list, level, trim):
     for chrm_name in chrm_list:
         chrm_arc(chrm_name, level, trim)
-    # for chrm_name in chrm_list:
-    #     draw_stats(chrm_name, level)
-    # viz_parameters['last_degree_end'] = 0
+    viz_parameters['last_degree_end'] = 0
+    for chrm_name in chrm_list:
+        draw_stats(chrm_name, level)
+    viz_parameters['last_degree_end'] = 0
 
 # Data drawing fucntion
 
 def draw_stats(chrm_name, level):
     work_dic = level_to_dic[level]
+
     # Create intial arc
     radius = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * level + viz_parameters['ring_width'] * level
 
@@ -580,24 +535,43 @@ def draw_stats(chrm_name, level):
     window_bp_counter = 0
     windowed_stats = []
     smoothed_stats = [] # per pixel
-
-    for list_it in range(len(work_dic)):
-        print work_dic[chrm_name][list_it][-1]
-        if  window_bp_counter < work_dic[chrm_name][list_it][0] or work_dic[chrm_name][list_it][0] <= window_bp_counter + window_size_for_smoothing:
+    emp_stats_processed =0
+    for list_it in range(len(work_dic[chrm_name])):
+        if  window_bp_counter > int(work_dic[chrm_name][list_it][0]):
             windowed_stats.append(work_dic[chrm_name][list_it][-1])
-        elif len(windowed_stats) == 0:
+        elif window_bp_counter <= int(work_dic[chrm_name][list_it][0]) and len(windowed_stats) == 0:
             window_bp_counter = window_bp_counter + window_size_for_smoothing
+            # need to correct for missing data
+            smoothed_stats.append('NA')
         else:
+            #print len(windowed_stats)
             smoothed_stats.append(float(np.mean(windowed_stats)))
             window_bp_counter = window_bp_counter + window_size_for_smoothing
+            windowed_stats = []
+
+    # code to fix missing data
+    for i in range(len(smoothed_stats)-1):
+
+        if smoothed_stats[i] == "NA":
+            if smoothed_stats[i-1] != "NA":
+                smoothed_stats[i] = smoothed_stats[i-1]
+            elif smoothed_stats[i + 1] != "NA":
+                smoothed_stats[i] = smoothed_stats[i+1]
+
+
+            #smoothed_stats[i] = float((smoothed_stats[i-1] + smoothed_stats[i+1])/2)
 
     # at this point each value in smoothed_stats reperesents the stat value that needs to be drawn for each pixel degree along the chrm arc
 
     # stat is (bp,stat)
     # draw first arc based on the ending of the pervious arc
 
-    #print smoothed_stats
+
     working_degree = viz_parameters['last_degree_end']
+    print chrm_name
+    print len(smoothed_stats) - arc_length
+
+    print emp_stats_processed
     for smoothed_stat in smoothed_stats:
 
         sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius)
@@ -607,8 +581,9 @@ def draw_stats(chrm_name, level):
         line_x, line_y = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius + viz_parameters['ring_width'])
         cr.line_to(line_x, line_y)
 
-        cr.set_source_rgb(0.5, 0.3, 0.9)
-        cr.stroke
+        cr.set_dash([])
+        cr.set_source_rgb(0, 0.3, 0)
+        cr.stroke()
 
         working_degree = float(working_degree + degrees_per_pixel)
     # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
