@@ -407,10 +407,8 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
     sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree_key + viz_parameters['key_degree_off_set'], radius_key)
     sx_key = 0
     for i in range(total_levels):
-        level_to_dic ={0: fst_stats,
-        1 :rna_stats }
-        sx_key = sx + (viz_parameters['key_width'])* i +viz_parameters['key_sep_distance'] * i
 
+        sx_key = sx + (viz_parameters['key_width'])* i +viz_parameters['key_sep_distance'] * i
 
         ############################
         # Add black trim to key 0 no , 1 yes
@@ -418,32 +416,29 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
         if trim == 0:
             # fill with color gradient
             #Pick stat based on level
-            stat_key = level_to_dic[i]
-
+            key = stat_list[i]
+            it_y = sy
             # sort all norm values and color each line basaed on the dictionary of color
-            for norm_val in sorted(color_stat_mapper_dic[stat_key].keys())
-                color = color_stat_mapper_dic[stat_key][norm_val]
-
+            for norm_val in sorted(color_stat_mapper_dic[key].keys()):
+                color = color_stat_mapper_dic[key][norm_val]
 
                 cr.set_source_rgba(color[0], color[1], color[2], color[3])
-                it_y = sy
-                for line_y in range(viz_parameters['key_height']):
+                cr.move_to(sx_key, it_y)
+                cr.line_to(sx_key + viz_parameters['key_width'],it_y)
+                cr.set_dash([])
+                cr.stroke()
 
-                    cr.move_to(sx_key, it_y)
-                    cr.line_to(sx_key + viz_parameters['key_width'])
-                    cr.set_dash([])
-                    cr.stroke()
-
-                    # update the y pos of next line
-                    it_y = it_y + line_y
-
-)
+                # update the y pos of next line
+                it_y = it_y + +1
+                print it_y
 
 
-            x0 = sx_key +viz_parameters['key_width']/2
-            y0 = sy
-            x1 = x0
-            y1 = sy + viz_parameters['key_height']
+
+
+            # x0 = sx_key +viz_parameters['key_width']/2
+            # y0 = sy
+            # x1 = x0
+            # y1 = sy + viz_parameters['key_height']
 
             # # start color gradient along line:
             # grad_fil = cairo.LinearGradient(x0, y0, x1,y1)
