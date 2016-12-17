@@ -28,14 +28,11 @@ chrm_name_order_list= ('groupI', 'groupII','groupIII', 'groupIV',
 'groupXIII', 'groupXIV', 'groupXV',
 'groupXVI', 'groupXVII', 'groupXVIII', 'groupXIX','groupXX','groupXXI')
 
-stats_dic= {'Div' :(0,1),
-'Fst': (0, 1),
-'Rand': (0,1)}
+stats_dic= {'Fst': (0, 1),'Div' :(0,1)}
 
-stat_list = ('Div','Fst', 'Rand')
+stat_list = ('Fst','Div', 'Rand')
 
-color_grad_dic= {'Div':'RdBu',
-'Fst': 'Spectral'}
+color_grad_dic= {'Fst': 'Spectral','Div':'RdBu'}
 
 
 #'Rand': ['0,0,0','0.5,0.5,0.1']}
@@ -528,21 +525,21 @@ def draw_stats(chrm_list, level):
         arc_length= float(2 * math.pi * radius_stat*( viz_parameters['total_degrees'] / 360))
 
         degrees_per_pixel = float(viz_parameters['total_degrees']/arc_length)
-        print degrees_per_pixel
         window_size_for_smoothing = float(chr_size_dic[chrm_name] / arc_length)
 
         # Data smoothing
         window_bp_counter = 0
         windowed_stats = []
         smoothed_stats = [] # per pixel
-        emp_stats_processed =0
+        emp_stats_processed = 0
         for list_it in range(len(work_dic[chrm_name])):
             if  window_bp_counter > int(work_dic[chrm_name][list_it][0]):
                 windowed_stats.append(work_dic[chrm_name][list_it][-1])
             elif window_bp_counter <= int(work_dic[chrm_name][list_it][0]) and len(windowed_stats) == 0:
                 window_bp_counter = window_bp_counter + window_size_for_smoothing
                 # need to correct for missing data
-                smoothed_stats.append('NA')
+                # smoothed_stats.append('NA')
+                smoothed_stats.append(0)
             else:
                 #print len(windowed_stats)
                 smoothed_stats.append(float(np.mean(windowed_stats)))
@@ -550,13 +547,15 @@ def draw_stats(chrm_list, level):
                 windowed_stats = []
 
         # code to fix missing data
-        for i in range(len(smoothed_stats)-1):
+        # for i in range(len(smoothed_stats)-1):
+        #
+        #     if smoothed_stats[i] == "NA":
+        #         a = 0
+        #         if smoothed_stats[i-1] != "NA":
+        #             smoothed_stats[i] = smoothed_stats[i-1]
+        #         elif smoothed_stats[i + 1] != "NA":
+        #             smoothed_stats[i] = smoothed_stats[i+1]
 
-            if smoothed_stats[i] == "NA":
-                if smoothed_stats[i-1] != "NA":
-                    smoothed_stats[i] = smoothed_stats[i-1]
-                elif smoothed_stats[i + 1] != "NA":
-                    smoothed_stats[i] = smoothed_stats[i+1]
 
 
                 #smoothed_stats[i] = float((smoothed_stats[i-1] + smoothed_stats[i+1])/2)
@@ -578,11 +577,15 @@ def draw_stats(chrm_list, level):
             cr.line_to(line_x, line_y)
 
             cr.set_dash([])
-            cr.set_line_width(1.5)
-            if level == 0:
-                cr.set_source_rgb(0, 0.3, 0)
-            else:
-                cr.set_source_rgb(0.5, 0.3, 0.6)
+            cr.set_line_width(1)
+
+
+            # Find color value closest to the input stat value
+            # following line is not my code from : http://stackoverflow.com/questions/12141150/from-list-of-integers-get-number-closest-to-a-given-value
+            closest_val = min(sorted(color_stat_mapper_dic[stat_list[level]].keys()), key=lambda x:abs(x-float(smoothed_stat)))
+
+            color = color_stat_mapper_dic[stat_list[level]][closest_val]
+            cr.set_source_rgba(color[0], color[1], color[2], color[3])
             cr.stroke()
 
             working_degree = float(working_degree + degrees_per_pixel)
