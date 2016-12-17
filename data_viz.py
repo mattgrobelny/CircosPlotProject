@@ -34,8 +34,10 @@ stats_dic= {'Div' :(0,1),
 
 stat_list = ('Div','Fst', 'Rand')
 
-color_grad_dic= {'Div':['0.2,0,0.9','0.1,0.9,0.4','0.9,0.1,0.4'],
-'Fst':  ['0.5,2.0,0.1','0.9,0.5,0.4','0.1,0.5,0.4']}
+color_grad_dic= {'Div':'RdBu',
+'Fst': 'Spectral'}
+
+
 #'Rand': ['0,0,0','0.5,0.5,0.1']}
 
 
@@ -75,10 +77,33 @@ img['center_y']   = img['height'] / 2.0
 img['font_size']  = 16
 
 ###############################################################################
+# available colors specturms names
+cmaps = [('Perceptually Uniform Sequential',
+                        ['viridis', 'inferno', 'plasma', 'magma']),
+     ('Sequential',     ['Blues', 'BuGn', 'BuPu',
+                         'GnBu', 'Greens', 'Greys', 'Oranges', 'OrRd',
+                         'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu',
+                         'Reds', 'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd']),
+     ('Sequential (2)', ['afmhot', 'autumn', 'bone', 'cool',
+                         'copper', 'gist_heat', 'gray', 'hot',
+                         'pink', 'spring', 'summer', 'winter']),
+     ('Diverging',      ['BrBG', 'bwr', 'coolwarm', 'PiYG', 'PRGn', 'PuOr',
+                         'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral',
+                         'seismic']),
+     ('Qualitative',    ['Accent', 'Dark2', 'Paired', 'Pastel1',
+                         'Pastel2', 'Set1', 'Set2', 'Set3']),
+     ('Miscellaneous',  ['gist_earth', 'terrain', 'ocean', 'gist_stern',
+                         'brg', 'CMRmap', 'cubehelix',
+                         'gnuplot', 'gnuplot2', 'gist_ncar',
+                         'nipy_spectral', 'jet', 'rainbow',
+                         'gist_rainbow', 'hsv', 'flag', 'prism'])]
+# http://matplotlib.org/examples/color/colormaps_reference.html
 
 color_stat_mapper_dic ={}
+
 for stat in stat_list:
-    color_stat_mapper_dic[stat] = { }
+    color_stat_mapper_dic[stat] = {}
+
 ###############################################################################
 #
 # Define the path our file
@@ -216,41 +241,33 @@ def data_norm(chrm_name, chrm_bp_st_dic, list_of_bp_n_stats, type_of_norm):
 
         chrm_bp_st_dic[chrm_name][i].append(float(stat_val))
 
-# def stat_to_color(stat, type_of_norm ):
-#     min_stat_val = 0
-#     max_stat_val = viz_parameters['key_height']
-#     log_min_stat_val= 0
-#     log_max_stat_val= math.log10(viz_parameters['key_height'])
-#
-#     stat_numer_count = 1
-#
-#     color_group = color_grad_dic[stat]
-#     number_of_colors = len(color_group)
-#     color_range = int(viz_parameters['key_height']/number_of_colors)
-#
-#     for color_num in range(number_of_colors):
-#         for alpha_div in range(1,color_range+1):
-#             if type_of_norm == "log":
-#                 # normalize from 0 to 1
-#                 normalized_val= float((math.log10(stat_numer_count) - log_min_stat_val)/(log_max_stat_val - log_min_stat_val))
-#
-#             else:
-#                 normalized_val= float((stat_numer_count-min_stat_val)/(max_stat_val-min_stat_val))
-#
-#             #
-#             split_vals = color_group[color_num].split(',')
-#             color_out = [float(1/alpha_div),float(split_vals[0]),float(split_vals[1]),float(split_vals[2])]
-#             color_stat_mapper_dic[stat][normalized_val] =  color_out
-#
-#             stat_numer_count = stat_numer_count + 1
-#
-#     print color_stat_mapper_dic[stat].keys()
-#     print
-color_list = plt.cm.Set2(np.linspace(0, 1, 12))
-print color_list
-plot_color_gradients(color_list)
+def stat_to_color(stat, type_of_norm):
+    
+    color = color_grad_dic[stat]
+    number_of_color_breaks = viz_parameters['key_height']
+    color_list = 0
+    color_code = "color_list = plt.cm.%s(np.linspace(0, 1, number_of_color_breaks))" % (color)
+    exec(color_code)
 
-plt.show()
+    min_stat_val = 0
+    max_stat_val = viz_parameters['key_height']
+    log_min_stat_val= 0
+    log_max_stat_val= math.log10(viz_parameters['key_height'])
+
+    stat_numer_count = 1
+
+    for color in color_list:
+        if type_of_norm == "log":
+            # normalize from 0 to 1
+            normalized_val= float((math.log10(stat_numer_count) - log_min_stat_val)/(log_max_stat_val - log_min_stat_val))
+
+        else:
+            normalized_val= float(stat_numer_count-min_stat_val)/float(max_stat_val-min_stat_val)
+        color_stat_mapper_dic[stat][normalized_val] =  color
+
+        stat_numer_count = stat_numer_count + 1
+
+
 # --------  Drawing functions -------- #
 
 # Draw a circle of arcs based on a list of chr which corresponed to the chrm size dic
@@ -673,7 +690,8 @@ for chrm_name in chrm_name_order_list:
 
 # stat_to_color('Div', 'def')
 # stat_to_color('Fst', "def")
-
+stat_to_color('Div',"log")
+stat_to_color('Fst', "norm")
 ###############################################################################
 # Test 2 - should output
 
