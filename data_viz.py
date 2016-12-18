@@ -531,36 +531,45 @@ def draw_stats(chrm_list, level):
         window_bp_counter = window_size_for_smoothing
         windowed_stats = []
         smoothed_stats = [] # per pixel
-
-        
         for list_it in range(len(work_dic[chrm_name])):
-            # if level == 0:
-            # print  level, chrm_name , len(smoothed_stats), work_dic[chrm_name][list_it][0]
-            if level == 0:
-                print window_bp_counter, int(work_dic[chrm_name][list_it][0])
-            if  int(window_bp_counter) >= int(work_dic[chrm_name][list_it][0]):
-                windowed_stats.append(work_dic[chrm_name][list_it][-1])
-                # if level == 0:
-                #     print "adding", windowed_stats
-                # # if level == 0:
-                #     print work_dic[chrm_name][list_it][-1]
-                #     print windowed_stats
-            elif int(work_dic[chrm_name][list_it][0]) >= int(window_bp_counter) and len(windowed_stats) == 0:
-                window_bp_counter = window_bp_counter + window_size_for_smoothing
-                if level == 0:
-                    print "empty and over", windowed_stats
-                # need to correct for missing data
-                # smoothed_stats.append('NA')
-                smoothed_stats.append(0)
-                windowed_stats = []
-            else:
-                #print len(windowed_stats)
-                if level == 0:
-                    print "mean", windowed_stats
-                smoothed_stats.append(np.mean(windowed_stats))
+            if level ==1:
+                        # if level == 0:
+                # print  level, chrm_name , len(smoothed_stats), work_dic[chrm_name][list_it][0]
+                if  int(window_bp_counter) >= int(work_dic[chrm_name][list_it][0]):
+                    windowed_stats.append(work_dic[chrm_name][list_it][-1])
+                    # if level == 0:
+                    #     print "adding", windowed_stats
+                    # # if level == 0:
+                    #     print work_dic[chrm_name][list_it][-1]
+                    #     print windowed_stats
+                elif int(work_dic[chrm_name][list_it][0]) >= int(window_bp_counter) and len(windowed_stats) == 0:
+                    window_bp_counter = window_bp_counter + window_size_for_smoothing
 
-                window_bp_counter = window_bp_counter + window_size_for_smoothing
-                windowed_stats = []
+                    # need to correct for missing data
+                    # smoothed_stats.append('NA')
+                    smoothed_stats.append(0)
+                    windowed_stats = []
+                else:
+                    #print len(windowed_stats)
+                    smoothed_stats.append(np.mean(windowed_stats))
+
+                    window_bp_counter = window_bp_counter + window_size_for_smoothing
+                    windowed_stats = []
+
+            elif level ==0:
+                print 'working on', chrm_name
+                for bp in range(chr_size_dic[chrm_name]):
+                    if bp != int(work_dic[chrm_name][list_it][0]) and bp <= window_bp_counter:
+                        windowed_stats.append(0)
+                    elif bp == int(work_dic[chrm_name][list_it][0]) and bp <= window_bp_counter:
+                        windowed_stats.append(work_dic[chrm_name][list_it][-1])
+                    elif bp !=  int(work_dic[chrm_name][list_it][0]) and bp >= window_bp_counter:
+                        windowed_stats.append(0)
+                        smoothed_stats.append(np.mean(windowed_stats))
+                    elif bp ==  int(work_dic[chrm_name][list_it][0]) and bp >= window_bp_counter:
+                        windowed_stats.append(work_dic[chrm_name][list_it][-1])
+                        smoothed_stats.append(np.mean(windowed_stats))
+                print 'Finished with', chrm_name
 
 
         # if level == 0:
