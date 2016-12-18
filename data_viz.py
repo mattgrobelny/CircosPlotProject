@@ -28,7 +28,7 @@ chrm_name_order_list= ['groupI', 'groupII','groupIII', 'groupIV',
 'groupXIII', 'groupXIV', 'groupXV',
 'groupXVI', 'groupXVII', 'groupXVIII', 'groupXIX','groupXX','groupXXI']
 
-stats_dic= {'Fst': (0, 1),'Div' :(0,1)}
+stats_dic= {'Fst': (1, 0),'Div' :(1,0)}
 
 stat_list = ['Fst','Div']
 
@@ -483,12 +483,15 @@ def chrm_arc(chrm_name, level, trim):
     ############################
     # Add black trim to chrm arcs 0 no , 1 yes
     if trim == 0:
-        pass
-        # cr.set_source_rgb(viz_parameters['fill_color'])
-
         #fill with grey color
-        cr.set_source_rgb(0.4, 0.4, 0.4)
-        cr.fill()
+        if level ==1:
+            cr.set_source_rgb(0.4, 0.4, 0.4)
+            cr.fill()
+        if level ==0 :
+            closest_val = min(sorted(color_stat_mapper_dic[stat_list[0]].keys()), key=lambda x:abs(x-float(0)))
+            color = color_stat_mapper_dic[stat_list[level]][closest_val]
+            cr.set_source_rgba(color[0], color[1], color[2], color[3])
+            cr.fill()
     else:
         #cr.set_source_rgb(viz_parameters['trim_color'])
 
@@ -509,6 +512,7 @@ def draw_chrom_arc(chrm_list, level, trim):
 
 
 # Data drawing fucntion
+
 
 def draw_stats(chrm_list, level):
     for chrm_name in chrm_list:
@@ -533,91 +537,66 @@ def draw_stats(chrm_list, level):
         smoothed_stats = [] # per pixel
         for list_it in range(len(work_dic[chrm_name])):
             if level ==1:
-                        # if level == 0:
-                # print  level, chrm_name , len(smoothed_stats), work_dic[chrm_name][list_it][0]
                 if  int(window_bp_counter) >= int(work_dic[chrm_name][list_it][0]):
                     windowed_stats.append(work_dic[chrm_name][list_it][-1])
-                    # if level == 0:
-                    #     print "adding", windowed_stats
-                    # # if level == 0:
-                    #     print work_dic[chrm_name][list_it][-1]
-                    #     print windowed_stats
+
                 elif int(work_dic[chrm_name][list_it][0]) >= int(window_bp_counter) and len(windowed_stats) == 0:
                     window_bp_counter = window_bp_counter + window_size_for_smoothing
-
-                    # need to correct for missing data
-                    # smoothed_stats.append('NA')
                     smoothed_stats.append(0)
                     windowed_stats = []
                 else:
-                    #print len(windowed_stats)
                     smoothed_stats.append(np.mean(windowed_stats))
-
                     window_bp_counter = window_bp_counter + window_size_for_smoothing
                     windowed_stats = []
+                working_degree = viz_parameters['last_degree_end']
+                for smoothed_stat in smoothed_stats:
 
-            elif level ==0:
-                print 'working on', chrm_name
-                for bp in range(chr_size_dic[chrm_name]):
-                    if bp != int(work_dic[chrm_name][list_it][0]) and bp <= window_bp_counter:
-                        windowed_stats.append(0)
-                    elif bp == int(work_dic[chrm_name][list_it][0]) and bp <= window_bp_counter:
-                        windowed_stats.append(work_dic[chrm_name][list_it][-1])
-                    elif bp !=  int(work_dic[chrm_name][list_it][0]) and bp >= window_bp_counter:
-                        windowed_stats.append(0)
-                        smoothed_stats.append(np.mean(windowed_stats))
-                    elif bp ==  int(work_dic[chrm_name][list_it][0]) and bp >= window_bp_counter:
-                        windowed_stats.append(work_dic[chrm_name][list_it][-1])
-                        smoothed_stats.append(np.mean(windowed_stats))
-                print 'Finished with', chrm_name
+                    sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius_stat)
+
+                    cr.move_to(sx, sy)
+
+                    line_x, line_y = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius_stat - viz_parameters['ring_width'])
+                    cr.line_to(line_x, line_y)
+
+                    cr.set_dash([])
+                    cr.set_line_width(1.25)
 
 
-        # if level == 0:
-        #     print  level, chrm_name , \
-        # code to fix missing data
-        # for i in range(len(smoothed_stats)-1):
-        #
-        #     if smoothed_stats[i] == "NA":
-        #         a = 0
-        #         if smoothed_stats[i-1] != "NA":
-        #             smoothed_stats[i] = smoothed_stats[i-1]
-        #         elif smoothed_stats[i + 1] != "NA":
-        #             smoothed_stats[i] = smoothed_stats[i+1]
+                    # Find color value closest to the input stat value
+                    # following line is not my code from : http://stackoverflow.com/questions/12141150/from-list-of-integers-get-number-closest-to-a-given-value
+                    closest_val = min(sorted(color_stat_mapper_dic[stat_list[level]].keys()), key=lambda x:abs(x-float(smoothed_stat)))
+
+                    color = color_stat_mapper_dic[stat_list[level]][closest_val]
+                    cr.set_source_rgba(color[0], color[1], color[2], color[3])
+                    cr.stroke()
+
+                    working_degree = float(working_degree + degrees_per_pixel)
+
+            if level ==0:
+                degree_for_data_pt = float(work_dic[chrm_name][list_it][0]) *viz_parameters['degree_per_nuc']
+                stat_for_drawing =work_dic[chrm_name][list_it][-1]
+                working_degree = float(viz_parameters['last_degree_end'] + degree_for_data_pt)
+
+                sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius_stat)
+
+                cr.move_to(sx, sy)
+
+                line_x, line_y = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius_stat - viz_parameters['ring_width'])
+                cr.line_to(line_x, line_y)
+
+                cr.set_dash([])
+                cr.set_line_width(1.25)
 
 
+                # Find color value closest to the input stat value
+                # following line is not my code from : http://stackoverflow.com/questions/12141150/from-list-of-integers-get-number-closest-to-a-given-value
+                closest_val = min(sorted(color_stat_mapper_dic[stat_list[level]].keys()), key=lambda x:abs(x-float(stat_for_drawing)))
 
-                #smoothed_stats[i] = float((smoothed_stats[i-1] + smoothed_stats[i+1])/2)
+                color = color_stat_mapper_dic[stat_list[level]][closest_val]
+                cr.set_source_rgba(color[0], color[1], color[2], color[3])
+                cr.stroke()
 
-        # at this point each value in smoothed_stats reperesents the stat value that needs to be drawn for each pixel degree along the chrm arc
-
-        # stat is (bp,stat)
-        # draw first arc based on the ending of the pervious arc
-
-        if level ==0:
-            print smoothed_stats
-        working_degree = viz_parameters['last_degree_end']
-        for smoothed_stat in smoothed_stats:
-
-            sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius_stat)
-
-            cr.move_to(sx, sy)
-
-            line_x, line_y = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius_stat - viz_parameters['ring_width'])
-            cr.line_to(line_x, line_y)
-
-            cr.set_dash([])
-            cr.set_line_width(1.25)
-
-
-            # Find color value closest to the input stat value
-            # following line is not my code from : http://stackoverflow.com/questions/12141150/from-list-of-integers-get-number-closest-to-a-given-value
-            closest_val = min(sorted(color_stat_mapper_dic[stat_list[level]].keys()), key=lambda x:abs(x-float(smoothed_stat)))
-
-            color = color_stat_mapper_dic[stat_list[level]][closest_val]
-            cr.set_source_rgba(color[0], color[1], color[2], color[3])
-            cr.stroke()
-
-            working_degree = float(working_degree + degrees_per_pixel)
+                working_degree = float(working_degree + degrees_per_pixel)
         # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
 
         viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
@@ -728,7 +707,7 @@ for chrm_name in chrm_name_order_list:
 
 # Test color produciton
 
-stat_to_color('Fst', "norm")
+stat_to_color('Fst', "log")
 stat_to_color('Div',"norm")
 
 
