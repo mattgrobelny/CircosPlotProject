@@ -22,15 +22,15 @@ chr_size_dic = {'groupI' : 28185914, 'groupII'   : 23295652, 'groupIII'   : 1679
 'groupXVI'  : 18115788, 'groupXVII' : 14603141, 'groupXVIII' : 16282716, 'groupXX'  : 19732071,
 'groupXXI'  : 11717487}
 
-chrm_name_order_list= ('groupI', 'groupII','groupIII', 'groupIV',
+chrm_name_order_list= ['groupI', 'groupII','groupIII', 'groupIV',
 'groupV', 'groupVI', 'groupVII',
 'groupVIII', 'groupIX', 'groupX', 'groupXI', 'groupXII',
 'groupXIII', 'groupXIV', 'groupXV',
-'groupXVI', 'groupXVII', 'groupXVIII', 'groupXIX','groupXX','groupXXI')
+'groupXVI', 'groupXVII', 'groupXVIII', 'groupXIX','groupXX','groupXXI']
 
 stats_dic= {'Fst': (0, 1),'Div' :(0,1)}
 
-stat_list = ('Fst','Div', 'Rand')
+stat_list = ['Fst','Div']
 
 color_grad_dic= {'Fst': 'Spectral','Div':'RdBu'}
 
@@ -224,19 +224,18 @@ def data_norm(chrm_name, chrm_bp_st_dic, list_of_bp_n_stats, type_of_norm):
 
     min_stat_val = min(stat_val_list)
     max_stat_val = max(stat_val_list)
-    log_min_stat_val= math.log10(min_stat_val)
-    log_max_stat_val= math.log10(max_stat_val)
 
+    # normalize from 0 to 1
     for i in range(length_of_list):
         if type_of_norm == "log":
-            # normalize from 0 to 1
-
+            log_min_stat_val= math.log10(min_stat_val)
+            log_max_stat_val= math.log10(max_stat_val)
             stat_val= float((math.log10(stat_val_list[i]) - log_min_stat_val)/(log_max_stat_val - log_min_stat_val))
 
-        else:
+        elif type_of_norm == "norm":
             stat_val= (stat_val_list[i]-min_stat_val)/(max_stat_val-min_stat_val)
 
-        chrm_bp_st_dic[chrm_name][i].append(float(stat_val))
+        chrm_bp_st_dic[chrm_name][i].append(stat_val)
 
 def stat_to_color(stat, type_of_norm):
 
@@ -258,9 +257,9 @@ def stat_to_color(stat, type_of_norm):
     for color in color_list:
         if type_of_norm == "log":
             # normalize from 0 to 1
-            normalized_val= float((math.log10(stat_numer_count) - log_min_stat_val)/(log_max_stat_val - log_min_stat_val))
+            normalized_val= float((math.log10(stat_numer_count) - log_min_stat_val)/float(log_max_stat_val - log_min_stat_val))
 
-        else:
+        elif type_of_norm == "norm":
             normalized_val= float(stat_numer_count-min_stat_val)/float(max_stat_val-min_stat_val)
         color_stat_mapper_dic[stat][normalized_val] =  color
 
@@ -487,9 +486,9 @@ def chrm_arc(chrm_name, level, trim):
         pass
         # cr.set_source_rgb(viz_parameters['fill_color'])
 
-        # fill with grey color
-        #cr.set_source_rgb(0.4, 0.4, 0.4)
-        #cr.fill()
+        #fill with grey color
+        cr.set_source_rgb(0.4, 0.4, 0.4)
+        cr.fill()
     else:
         #cr.set_source_rgb(viz_parameters['trim_color'])
 
@@ -524,28 +523,48 @@ def draw_stats(chrm_list, level):
 
         arc_length= float(2 * math.pi * radius_stat*( viz_parameters['total_degrees'] / 360))
 
-        degrees_per_pixel = float(viz_parameters['total_degrees']/arc_length)
+        degrees_per_pixel = float(viz_parameters['total_degrees']/ arc_length)
         window_size_for_smoothing = float(chr_size_dic[chrm_name] / arc_length)
-
+        # if level == 1:
+        #      print window_size_for_smoothing
         # Data smoothing
-        window_bp_counter = 0
+        window_bp_counter = window_size_for_smoothing
         windowed_stats = []
         smoothed_stats = [] # per pixel
-        emp_stats_processed = 0
+
+        
         for list_it in range(len(work_dic[chrm_name])):
-            if  window_bp_counter > int(work_dic[chrm_name][list_it][0]):
+            # if level == 0:
+            # print  level, chrm_name , len(smoothed_stats), work_dic[chrm_name][list_it][0]
+            if level == 0:
+                print window_bp_counter, int(work_dic[chrm_name][list_it][0])
+            if  int(window_bp_counter) >= int(work_dic[chrm_name][list_it][0]):
                 windowed_stats.append(work_dic[chrm_name][list_it][-1])
-            elif window_bp_counter <= int(work_dic[chrm_name][list_it][0]) and len(windowed_stats) == 0:
+                # if level == 0:
+                #     print "adding", windowed_stats
+                # # if level == 0:
+                #     print work_dic[chrm_name][list_it][-1]
+                #     print windowed_stats
+            elif int(work_dic[chrm_name][list_it][0]) >= int(window_bp_counter) and len(windowed_stats) == 0:
                 window_bp_counter = window_bp_counter + window_size_for_smoothing
+                if level == 0:
+                    print "empty and over", windowed_stats
                 # need to correct for missing data
                 # smoothed_stats.append('NA')
                 smoothed_stats.append(0)
+                windowed_stats = []
             else:
                 #print len(windowed_stats)
-                smoothed_stats.append(float(np.mean(windowed_stats)))
+                if level == 0:
+                    print "mean", windowed_stats
+                smoothed_stats.append(np.mean(windowed_stats))
+
                 window_bp_counter = window_bp_counter + window_size_for_smoothing
                 windowed_stats = []
 
+
+        # if level == 0:
+        #     print  level, chrm_name , \
         # code to fix missing data
         # for i in range(len(smoothed_stats)-1):
         #
@@ -565,7 +584,8 @@ def draw_stats(chrm_list, level):
         # stat is (bp,stat)
         # draw first arc based on the ending of the pervious arc
 
-
+        if level ==0:
+            print smoothed_stats
         working_degree = viz_parameters['last_degree_end']
         for smoothed_stat in smoothed_stats:
 
@@ -577,7 +597,7 @@ def draw_stats(chrm_list, level):
             cr.line_to(line_x, line_y)
 
             cr.set_dash([])
-            cr.set_line_width(1)
+            cr.set_line_width(1.25)
 
 
             # Find color value closest to the input stat value
@@ -590,8 +610,9 @@ def draw_stats(chrm_list, level):
 
             working_degree = float(working_degree + degrees_per_pixel)
         # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
-        viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
 
+        viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
+    print "Done with level:", level
 # -------- Main Drawing function -------- #
 # Draw all chrm arc for a given level w (1) or wo (0) balck trim w 10mb labels, color
 def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
@@ -616,10 +637,11 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
             color_key(total_levels, location, 0)
     else:
         for i in range(total_levels):
-            draw_stats(chrm_list, i)
 
             viz_parameters['last_degree_end'] = 0
             draw_chrom_arc(chrm_list, i, 0)
+            viz_parameters['last_degree_end'] = 0
+            draw_stats(chrm_list, i)
             viz_parameters['last_degree_end'] = 0
             draw_chrom_arc(chrm_list, i, 1)
 
@@ -684,7 +706,7 @@ fh2_Div_file.close
 
 # Data normalization
 for chrm_name in chrm_name_order_list:
-    #data_norm(chrm_name,fst_stats,fst_stats[chrm_name], "def")
+    data_norm(chrm_name,fst_stats,fst_stats[chrm_name], "norm")
     data_norm(chrm_name,rna_stats,rna_stats[chrm_name], "log")
 
 
@@ -697,10 +719,9 @@ for chrm_name in chrm_name_order_list:
 
 # Test color produciton
 
-# stat_to_color('Div', 'def')
-# stat_to_color('Fst', "def")
-stat_to_color('Div',"log")
 stat_to_color('Fst', "norm")
+stat_to_color('Div',"norm")
+
 
 ###############################################################################
 # Test 2 - should output
