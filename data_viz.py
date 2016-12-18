@@ -32,7 +32,7 @@ stats_dic= {'Fst': (0, 1),'Div' :(0,1)}
 
 stat_list = ['Fst','Div']
 
-color_grad_dic= {'Fst': 'Blues','Div':'hot'}
+color_grad_dic= {'Fst': 'hot','Div':'seismic'}
 
 
 #'Rand': ['0,0,0','0.5,0.5,0.1']}
@@ -45,7 +45,7 @@ viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'ring_gap': 10,
 'arc_padding_in_degrees': 2,
 'last_degree_end': 0,
-'ring_width': 35,
+'ring_width': 45,
 'total_degrees': 0,
 '10mb_step_off_set':32,
 'font_size': 5, # need to test sizes
@@ -57,7 +57,7 @@ viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'key_height' : 120,
 'key_sep_distance':14,
 'key_degree_off_set': -10,
-"key_label_font_x": 0.6
+"key_label_font_x": 0.7
 
 #'fill_color' :'0.4,0.4,0.4' ,
 #'trim_color' : '0,0,0'
@@ -427,7 +427,8 @@ def color_key(total_levels,location,trim): #min, max,color_start, color_end,
             key = stat_list[i]
             it_y = sy
             # sort all norm values and color each line basaed on the dictionary of color
-            for norm_val in sorted(color_stat_mapper_dic[key].keys()):
+
+            for norm_val in reversed(sorted(color_stat_mapper_dic[key].keys())):
                 color = color_stat_mapper_dic[key][norm_val]
 
                 cr.set_source_rgba(color[0], color[1], color[2], color[3])
@@ -532,7 +533,6 @@ def draw_stats(chrm_list, level):
         work_dic = level_to_dic[level]
         radius_stat = viz_parameters['rad_inner'] + viz_parameters['ring_gap'] * level + viz_parameters['ring_width'] * level
 
-        #print radius_stat
         # Create intial arc
         # calculate the number of degrees the are will span based on chrm size
         viz_parameters['total_degrees'] = float(viz_parameters['degree_per_nuc']) * float(chr_size_dic[chrm_name])
@@ -542,8 +542,7 @@ def draw_stats(chrm_list, level):
 
         degrees_per_pixel = float(viz_parameters['total_degrees']/ arc_length)
         window_size_for_smoothing = float(chr_size_dic[chrm_name] / arc_length)
-        # if level == 1:
-        #      print window_size_for_smoothing
+
         # Data smoothing
         window_bp_counter = window_size_for_smoothing
         windowed_stats = []
@@ -586,9 +585,9 @@ def draw_stats(chrm_list, level):
                     working_degree = float(working_degree + degrees_per_pixel)
 
             if level ==0:
-                print max(work_dic[chrm_name][0])
+
                 degree_for_data_pt = float(work_dic[chrm_name][list_it][0]) *viz_parameters['degree_per_nuc']
-                #print degree_for_data_pt
+
                 stat_for_drawing = work_dic[chrm_name][list_it][-1]
                 start_deg = viz_parameters['last_degree_end']
                 working_degree = start_deg + degree_for_data_pt
@@ -609,7 +608,7 @@ def draw_stats(chrm_list, level):
                 closest_val = min(sorted(color_stat_mapper_dic[stat_list[level]].keys()), key=lambda x:abs(x-float(stat_for_drawing)))
 
                 color = color_stat_mapper_dic[stat_list[level]][closest_val]
-                #print color
+
                 cr.set_source_rgba(color[0], color[1], color[2], color[3])
                 cr.stroke()
 
@@ -654,9 +653,6 @@ def draw_chrom_arc_w_label(chrm_list, total_levels, trim, roman, location):
 
 
 ###############################################################################
-
-
-
 # # Data import
 
 # Create fst data dictionary
@@ -707,37 +703,32 @@ for line in fh2_Div_file:
     rna_stats[line[0]].append([line[1],line[2]])
 fh2_Div_file.close
 
-
-# Data normalization
-for chrm_name in chrm_name_order_list:
-    #data_norm(chrm_name,fst_stats,fst_stats[chrm_name], "norm")
-    data_norm(chrm_name,rna_stats,rna_stats[chrm_name], "log")
-
-
 #  Thus:
 #  For rna_stats['chrmII'] outputs ["bp","stat"]
 #  rna_stats['chrmII'][0] = ["bp","stat"]
 #  rna_stats['chrmII'][0][0] = Base pair
 #  rna_stats['chrmII'][0][1] = stats
 
+###############################################################################
+# Data normalization
+for chrm_name in chrm_name_order_list:
+    #data_norm(chrm_name,fst_stats,fst_stats[chrm_name], "norm")
+    data_norm(chrm_name,rna_stats,rna_stats[chrm_name], "log")
 
-# Test color produciton
 
-stat_to_color('Fst', "log",'False')
+###############################################################################
+# Map colors to stat
+
+stat_to_color('Fst', "norm",'True')
 stat_to_color('Div',"norm","False")
 
 
 ###############################################################################
-# Test 2 - should output
-
-draw_chrom_arc_w_label(chrm_name_order_list, 2, 0, 1,"def")
+# Draw final image
+draw_chrom_arc_w_label(chrm_name_order_list, 2, 1, 1,"def")
 ###############################################################################
 
 #
-# chrm_name_order_list[0:2]
-# draw_stats(chrm_name_order_list[0:2], 0)
-# draw_stats(chrm_name_order_list[0:2], 1)
-###############################################################################
 # End of file
 #
 # Close the file
