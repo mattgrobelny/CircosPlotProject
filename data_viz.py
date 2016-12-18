@@ -32,7 +32,7 @@ stats_dic= {'Fst': (0, 1),'Div' :(0,1)}
 
 stat_list = ['Fst','Div']
 
-color_grad_dic= {'Fst': 'hot','Div':'seismic'}
+color_grad_dic= {'Fst': 'Greens','Div':'seismic'}
 
 
 #'Rand': ['0,0,0','0.5,0.5,0.1']}
@@ -45,7 +45,7 @@ viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
 'ring_gap': 10,
 'arc_padding_in_degrees': 2,
 'last_degree_end': 0,
-'ring_width': 45,
+'ring_width': 35,
 'total_degrees': 0,
 '10mb_step_off_set':32,
 'font_size': 5, # need to test sizes
@@ -719,7 +719,7 @@ for chrm_name in chrm_name_order_list:
 ###############################################################################
 # Map colors to stat
 
-stat_to_color('Fst', "norm",'True')
+stat_to_color('Fst', "norm",'False')
 stat_to_color('Div',"norm","False")
 
 
