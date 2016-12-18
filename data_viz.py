@@ -28,11 +28,11 @@ chrm_name_order_list= ['groupI', 'groupII','groupIII', 'groupIV',
 'groupXIII', 'groupXIV', 'groupXV',
 'groupXVI', 'groupXVII', 'groupXVIII', 'groupXIX','groupXX','groupXXI']
 
-stats_dic= {'Fst': (1, 0),'Div' :(1,0)}
+stats_dic= {'Fst': (0, 1),'Div' :(0,1)}
 
 stat_list = ['Fst','Div']
 
-color_grad_dic= {'Fst': 'Spectral','Div':'RdBu'}
+color_grad_dic= {'Fst': 'Blues','Div':'hot'}
 
 
 #'Rand': ['0,0,0','0.5,0.5,0.1']}
@@ -237,7 +237,7 @@ def data_norm(chrm_name, chrm_bp_st_dic, list_of_bp_n_stats, type_of_norm):
 
         chrm_bp_st_dic[chrm_name][i].append(stat_val)
 
-def stat_to_color(stat, type_of_norm):
+def stat_to_color(stat, type_of_norm,reverse):
 
     # create color list based on color group
     color = color_grad_dic[stat]
@@ -254,16 +254,28 @@ def stat_to_color(stat, type_of_norm):
     stat_numer_count = 1
 
     # save color to normalized pixel space values between 1 and 0
-    for color in color_list:
-        if type_of_norm == "log":
-            # normalize from 0 to 1
-            normalized_val= float((math.log10(stat_numer_count) - log_min_stat_val)/float(log_max_stat_val - log_min_stat_val))
+    if reverse == 'True':
+        for color in reversed(color_list):
+            if type_of_norm == "log":
+                # normalize from 0 to 1
+                normalized_val= float((math.log10(stat_numer_count) - log_min_stat_val)/float(log_max_stat_val - log_min_stat_val))
 
-        elif type_of_norm == "norm":
-            normalized_val= float(stat_numer_count-min_stat_val)/float(max_stat_val-min_stat_val)
-        color_stat_mapper_dic[stat][normalized_val] =  color
+            elif type_of_norm == "norm":
+                normalized_val= float(stat_numer_count-min_stat_val)/float(max_stat_val-min_stat_val)
+            color_stat_mapper_dic[stat][normalized_val] =  color
 
-        stat_numer_count = stat_numer_count + 1
+            stat_numer_count = stat_numer_count + 1
+    elif reverse == 'False':
+        for color in color_list:
+            if type_of_norm == "log":
+                # normalize from 0 to 1
+                normalized_val= float((math.log10(stat_numer_count) - log_min_stat_val)/float(log_max_stat_val - log_min_stat_val))
+
+            elif type_of_norm == "norm":
+                normalized_val= float(stat_numer_count-min_stat_val)/float(max_stat_val-min_stat_val)
+            color_stat_mapper_dic[stat][normalized_val] =  color
+
+            stat_numer_count = stat_numer_count + 1
 
 
 # --------  Drawing functions -------- #
@@ -483,20 +495,21 @@ def chrm_arc(chrm_name, level, trim):
     ############################
     # Add black trim to chrm arcs 0 no , 1 yes
     if trim == 0:
-        #fill with grey color
-        if level ==1:
-            cr.set_source_rgb(0.4, 0.4, 0.4)
-            cr.fill()
-        if level ==0 :
-            closest_val = min(sorted(color_stat_mapper_dic[stat_list[0]].keys()), key=lambda x:abs(x-float(0)))
-            color = color_stat_mapper_dic[stat_list[level]][closest_val]
-            cr.set_source_rgba(color[0], color[1], color[2], color[3])
-            cr.fill()
+        pass
+        # #fill with grey color
+        # if level ==1:
+        #     cr.set_source_rgb(0.4, 0.4, 0.4)
+        #     cr.fill()
+        # if level ==0 :
+        #     closest_val = min(sorted(color_stat_mapper_dic[stat_list[0]].keys()), key=lambda x:abs(x-float(0)))
+        #     color = color_stat_mapper_dic[stat_list[level]][closest_val]
+        #     cr.set_source_rgba(color[0], color[1], color[2], color[3])
+        #     cr.fill()
     else:
         #cr.set_source_rgb(viz_parameters['trim_color'])
 
         #  trim in black
-        cr.set_source_rgb(0, 0, 0)
+        cr.set_source_rgba(0, 0, 0)
         cr.stroke()
 
     ############################
@@ -573,9 +586,12 @@ def draw_stats(chrm_list, level):
                     working_degree = float(working_degree + degrees_per_pixel)
 
             if level ==0:
+                print max(work_dic[chrm_name][0])
                 degree_for_data_pt = float(work_dic[chrm_name][list_it][0]) *viz_parameters['degree_per_nuc']
-                stat_for_drawing =work_dic[chrm_name][list_it][-1]
-                working_degree = float(viz_parameters['last_degree_end'] + degree_for_data_pt)
+                #print degree_for_data_pt
+                stat_for_drawing = work_dic[chrm_name][list_it][-1]
+                start_deg = viz_parameters['last_degree_end']
+                working_degree = start_deg + degree_for_data_pt
 
                 sx, sy = get_x_y_coordinates(img['center_x'], img['center_y'], working_degree, radius_stat)
 
@@ -585,7 +601,7 @@ def draw_stats(chrm_list, level):
                 cr.line_to(line_x, line_y)
 
                 cr.set_dash([])
-                cr.set_line_width(1.25)
+                cr.set_line_width(2)
 
 
                 # Find color value closest to the input stat value
@@ -593,10 +609,10 @@ def draw_stats(chrm_list, level):
                 closest_val = min(sorted(color_stat_mapper_dic[stat_list[level]].keys()), key=lambda x:abs(x-float(stat_for_drawing)))
 
                 color = color_stat_mapper_dic[stat_list[level]][closest_val]
+                #print color
                 cr.set_source_rgba(color[0], color[1], color[2], color[3])
                 cr.stroke()
 
-                working_degree = float(working_degree + degrees_per_pixel)
         # Update the end of viz parameter[last_degree_end] + padding --> for next arc start degree
 
         viz_parameters['last_degree_end'] = float(viz_parameters['last_degree_end']) + float(viz_parameters['total_degrees']) + float(viz_parameters['arc_padding_in_degrees'])
@@ -658,7 +674,7 @@ level_to_dic ={0: fst_stats,
 # add each chrm, bp and stat pt to dictionary
 
 # Open fst Data file
-in_file = './Pop_fst_data.tsv'
+in_file = './Pop_fst_out.tsv'
 fh1_fst_file = open(in_file, 'r')
 
 # skip header
@@ -694,7 +710,7 @@ fh2_Div_file.close
 
 # Data normalization
 for chrm_name in chrm_name_order_list:
-    data_norm(chrm_name,fst_stats,fst_stats[chrm_name], "norm")
+    #data_norm(chrm_name,fst_stats,fst_stats[chrm_name], "norm")
     data_norm(chrm_name,rna_stats,rna_stats[chrm_name], "log")
 
 
@@ -707,17 +723,20 @@ for chrm_name in chrm_name_order_list:
 
 # Test color produciton
 
-stat_to_color('Fst', "log")
-stat_to_color('Div',"norm")
+stat_to_color('Fst', "log",'False')
+stat_to_color('Div',"norm","False")
 
 
 ###############################################################################
 # Test 2 - should output
 
-draw_chrom_arc_w_label(chrm_name_order_list, 2, 1, 1,"def")
+draw_chrom_arc_w_label(chrm_name_order_list, 2, 0, 1,"def")
 ###############################################################################
 
-
+#
+# chrm_name_order_list[0:2]
+# draw_stats(chrm_name_order_list[0:2], 0)
+# draw_stats(chrm_name_order_list[0:2], 1)
 ###############################################################################
 # End of file
 #
