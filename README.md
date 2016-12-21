@@ -2,5 +2,5 @@
 details will follow
 
 Inline-style:
-![alt text](Data-viz-Circle-plot/output_plots/plots_contruction.gif "Circos Plot Contstruction")
+![](https://github.com/mattgrobelny/Data-viz-Circle-plot/blob/master/output_plots/plots_contruction.gif "Circos Plot Contstruction")
 
