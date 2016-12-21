@@ -11,7 +11,7 @@ A visualization of comparative statistics values for each chromosome for a given
 ### What data is Plotted?  
 
 ### How do I interpret this plot?
-
+![](https://github.com/mattgrobelny/CircosPlotProject/blob/master/output_plots/jpg/12Grobelny_data_viz-1.jpg "Final Circos Plot")  
 ### What is the code work flow?
 
 ### What does each function do?
