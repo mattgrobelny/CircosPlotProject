@@ -28,7 +28,5 @@ A visualization of comparative statistics values for each chromosome for a given
 - [] Rewrite with each arc or level of circos plot being an object  
 - [] Add a web interface for easy data upload and sider based parameter adjustment.  
 
-<p align="center">
-  <![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Culaea_inconstans_1908.jpg/250px-Culaea_inconstans_1908.jpg "three-spined stickleback (Gasterosteus aculeatus)")   />
-</p>
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Culaea_inconstans_1908.jpg/250px-Culaea_inconstans_1908.jpg "three-spined stickleback (Gasterosteus aculeatus)") 
 
