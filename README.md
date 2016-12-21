@@ -5,7 +5,7 @@ Goal: Generate a circos plot from a three-spined stickleback fish (image below) 
 ## Circos Plot Construction
 ![](https://github.com/mattgrobelny/Data-viz-Circle-plot/blob/master/output_plots/plots_contruction_large.gif "Circos Plot Contstruction")  
 
-### What is a Circos Plot?
+## What is a Circos Plot?
 A visualization of comparative statistics values for each chromosome for a given organism.  
 
 ### What data is Plotted?  
@@ -16,13 +16,13 @@ A visualization of comparative statistics values for each chromosome for a given
 
 ### What does each function do?
 
-### Which libraries Where Used to Generate the Plot?
+## Which libraries Where Used to Generate the Plot?
 - [Cairo](https://www.cairographics.org) - 2d graphics library
 - [pycairo](https://www.cairographics.org/documentation/pycairo/3/) - python connector for the cairo library
 - matplotlib - color maps
 - numpy - some math functions
 
-### Ideas for Future Improvements
+## Ideas for Future Improvements
 - [] Clean up code  
 - [] Organize functions in separate script  
 - [] Rewrite with each arc or level of circos plot being an object  
