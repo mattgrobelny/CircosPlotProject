@@ -1,12 +1,11 @@
 # Circos Plot Project
-Goal: Generate a circos plot from a three-spined stickleback dataset containing fst and differential extression data. 
-![](http://cdn1.arkive.org/media/65/657BAE03-E957-4FB0-BA51-9225D606A171/Presentation.Large/Three-spined-stickleback.jpg "three-spined stickleback (Gasterosteus aculeatus)")
+Goal: Generate a circos plot from a three-spined stickleback dataset containing fst and differential extression data. ![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Culaea_inconstans_1908.jpg/250px-Culaea_inconstans_1908.jpg "three-spined stickleback (Gasterosteus aculeatus)")  
 
 ## Circos Plot Construction
-![](https://github.com/mattgrobelny/Data-viz-Circle-plot/blob/master/output_plots/plots_contruction_large.gif "Circos Plot Contstruction")
+![](https://github.com/mattgrobelny/Data-viz-Circle-plot/blob/master/output_plots/plots_contruction_large.gif "Circos Plot Contstruction")  
 
 ## What is a Circos Plot?
-A visulization of compartive statitics values for each chromosome for a given organism.
+A visulization of compartive statitics values for each chromosome for a given organism.  
 
 ## Which libaries Where Used to Generate the Plot?
 - [Cairo](https://www.cairographics.org) - 2d graphics library 
