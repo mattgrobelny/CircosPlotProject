@@ -2,9 +2,5 @@
 details will follow
 
 Inline-style:
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+![alt text](Data-viz-Circle-plot/output_plots/plots_contruction.gif "Circos Plot Contstruction")
 
-<!-- Reference-style:
-![alt text][logo]
-
-[logo]: https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 2" -->
