@@ -23,10 +23,9 @@ A visualization of comparative statistics values for each chromosome for a given
 - numpy - some math functions
 
 ## Ideas for Future Improvements
-- [] Clean up code  
-- [] Organize functions in separate script  
-- [] Rewrite with each arc or level of circos plot being an object  
+- [] Clean up code.  
+- [] Organize functions in separate script.  
+- [] Rewrite with each chromosome arc of the circos plot as an object.  
 - [] Add a web interface for easy data upload and sider based parameter adjustment.  
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Culaea_inconstans_1908.jpg/250px-Culaea_inconstans_1908.jpg "three-spined stickleback (Gasterosteus aculeatus)") 
-
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Culaea_inconstans_1908.jpg/250px-Culaea_inconstans_1908.jpg "three-spined stickleback (Gasterosteus aculeatus)")
