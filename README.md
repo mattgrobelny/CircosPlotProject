@@ -11,14 +11,18 @@ A visualization of comparative statistics values for each chromosome for a given
 ### What data is Plotted?  
 
 ### How do I interpret this plot?
-Overview
-- Each circle of arcs represent the whole genome of a three-spined stickleback split up into individual chromosomes. Each chromosome arc is colored according to its corresponding statistics for a specific nucleotide (Fst) or a region average (Div). Each arc has its genomic coordinates plotted with 5mb breaks (dashed grey lines) with labels at every 10mb intervals. The color key for each statistic is in the top right corner ranging from 0 to 1 p-values for Fst and normalized (0 to 1) fold change values for gene expression.
+**Overview**  
+- Each circle of arcs represent the whole genome of a three-spined stickleback split up into individual chromosomes.
+- Each chromosome arc is colored according to its corresponding statistics for a specific nucleotide (Fst) or a region average (Div). Each arc has its genomic coordinates plotted with 5mb breaks (dashed grey lines) with labels at every 10mb intervals.
+- The color key for each statistic is in the top right corner ranging from 0 to 1 p-values for Fst and normalized (0 to 1) fold change values for gene expression.
 
-Fst Values (inner circle)
-- Shows which region of the genome has population wide differentiation, with regions with a low number of single nucleotide polymorphism (SNPs) meaning these regions are fixed and have low variability are colored dark green. Regions which contain lots of SNP or variability are white.  
+**Fst Values (inner circle)**
+- Shows which region of the genome has population wide differentiation, with regions with a low number of single nucleotide polymorphism (SNPs) meaning these regions are fixed and have low variability are colored dark green.
+- Regions which contain lots of SNP or variability are white.  
 
-RNAseq gene expression fold change *DIV* (outer circle)
-- Maps gene expression fold change values for a RNAseq dataset. Regions of genes which where highly expressed are colored red, while regions which were relatively less expressed are colored blue.
+**RNAseq gene expression fold change *DIV* (outer circle)**
+- Maps gene expression fold change values for a RNAseq dataset.
+- Regions of genes which where highly expressed are colored red, while regions which were relatively less expressed are colored blue.
 
 ![](https://github.com/mattgrobelny/CircosPlotProject/blob/master/output_plots/jpg/12Grobelny_data_viz-1.jpg "Final Circos Plot")  
 
