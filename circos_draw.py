@@ -8,6 +8,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 ###############################################################################
+# # Progress bar is not my own work from:
+# # https://gist.github.com/vladignatyev/06860ec2040cb497f0f3
+# #
+# def progress(count, total, suffix=''):
+#     bar_len = 60
+#     filled_len = int(round(bar_len * count / float(total)))
+#
+#     percents = round(100.0 * count / float(total), 1)
+#     bar = '=' * filled_len + '-' * (bar_len - filled_len)
+#
+#     sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', suffix))
+#     sys.stdout.flush()
+#
+
+###############################################################################
 #
 # Convert a radius and a span of degrees into X, Y coordinates #
 
@@ -94,6 +109,7 @@ def data_norm(chrm_name, chrm_bp_st_dic, list_of_bp_n_stats, type_of_norm):
 def stat_to_color(stat, type_of_norm, reverse):
 
     # create color list based on color group
+    global color_grad_dic[stat]
     color = color_grad_dic[stat]
 
     number_of_color_breaks = viz_parameters['key_height']

@@ -23,9 +23,6 @@ stat_list = ['Fst', 'Div']
 color_grad_dic = {'Fst': 'Greens', 'Div': 'seismic'}
 
 
-#'Rand': ['0,0,0','0.5,0.5,0.1']}
-
-
 ###############################################################################
 viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
                   'number_of_chr': len(chr_size_dic),
@@ -48,9 +45,6 @@ viz_parameters = {'total_genome_size': sum(chr_size_dic.values()),
                   'key_sep_distance': 14,
                   'key_degree_off_set': -10,
                   "key_label_font_x": 0.7
-
-                  #'fill_color' :'0.4,0.4,0.4' ,
-                  #'trim_color' : '0,0,0'
                   }
 
 # calculate number of degrees per nucleotide
@@ -100,8 +94,6 @@ import math
 import numpy as np
 
 import matplotlib.pyplot as plt
-#from data_viz_functions import *
-
 import circos_draw
 
 ###############################################################################
@@ -154,19 +146,6 @@ cr = cairo.Context(ps)
 #
 #
 # ###############################################################################
-# # Progress bar is not my own work from:
-# # https://gist.github.com/vladignatyev/06860ec2040cb497f0f3
-# #
-# def progress(count, total, suffix=''):
-#     bar_len = 60
-#     filled_len = int(round(bar_len * count / float(total)))
-#
-#     percents = round(100.0 * count / float(total), 1)
-#     bar = '=' * filled_len + '-' * (bar_len - filled_len)
-#
-#     sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', suffix))
-#     sys.stdout.flush()
-#
 
 
 ###############################################################################
